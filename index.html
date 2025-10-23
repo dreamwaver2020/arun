@@ -343,7 +343,148 @@ if(!arr || arr.length==0){
 }
 <\/script></body></html>`;
 }
+</script>
 
+<!-- Firebase Sync module: loads firebase-sync.js and attempts to sync local keys with Firestore.
+     IMPORTANT: Open firebase-sync.js and replace firebaseConfig with your Firebase project's config.
+-->
+<script type="module">
+import { initFirebase, loadKey, saveKey, subscribeKey } from './firebase-sync.js';
+
+(async ()=>{
+  try{
+    await initFirebase();
+  }catch(e){
+    console.warn('Firebase init failed (please edit firebase-sync.js and add config).', e);
+    return;
+  }
+
+  // Map of localStorage keys used by this app and behavior
+  const syncKeys = [
+    'bank_statement_html_v2',
+    'esewa_entries_v1',
+    'collectorData_v_final',
+    'denominationData_v_final',
+    'collectorHistory_v1',
+    'collectorNotes_v_final',
+    'autoSaveEnabled_v_final'
+  ];
+
+  // On load: try load each key from Firestore and populate localStorage if found.
+  for(const k of syncKeys){
+    try{
+      const v = await loadKey(k);
+      if(v!==null){
+        // Store as string in localStorage (same shape as original apps expect)
+        localStorage.setItem(k, JSON.stringify(v));
+        console.log('Loaded',k,'from Firestore');
+      }
+    }catch(e){ console.warn('Load key error',k,e); }
+  }
+
+  // Setup real-time subscriptions: when remote changes, update localStorage (and trigger storage event)
+  for(const k of syncKeys){
+    try{
+      subscribeKey(k, (val)=>{
+        if(val===null){ return; }
+        localStorage.setItem(k, JSON.stringify(val));
+        // fire a storage-like event for other frames
+        try{ window.dispatchEvent(new Event('storage')); }catch(e){}
+        console.log('Realtime update applied for',k);
+      });
+    }catch(e){ console.warn('Subscribe failed for',k,e); }
+  }
+
+  // Watch localStorage changes and push them to Firestore for the keys listed
+  window.addEventListener('beforeunload', async ()=>{
+    for(const k of syncKeys){
+      const raw = localStorage.getItem(k);
+      if(raw===null) continue;
+      try{
+        const parsed = JSON.parse(raw);
+        await saveKey(k, parsed);
+        console.log('Saved on unload',k);
+      }catch(e){ console.warn('Save on unload failed',k,e); }
+    }
+  });
+
+  // Also listen to custom event to force-save a key: window.dispatchEvent(new CustomEvent('fsave',{detail:{key:'...',value:...}}))
+  window.addEventListener('fsave', async (ev)=>{
+    const {key, value} = ev.detail || {};
+    if(!key) return;
+    try{ await saveKey(key, value); console.log('Saved key via fsave',key); }catch(e){console.warn(e);}
+  });
+
+})();
 </script>
 </body>
+</html>
+
+</body>
+<!-- 🌐 Backup / Restore Panel -->
+<div style="margin:30px auto; text-align:center; background:#eef6ff; padding:20px; width:90%; max-width:600px; border-radius:20px; box-shadow:0 4px 10px rgba(0,0,0,0.1); font-family:Arial;">
+  <h2 style="color:#0077cc;">🔐 Data Backup & Restore</h2>
+  <p style="font-size:14px; color:#333;">
+    तपाईंको सबै स्थानीय डाटा (localStorage) सुरक्षित राख्न वा पुनः Restore गर्नका लागि तलका बटन प्रयोग गर्नुहोस्।
+  </p>
+
+  <button id="backupBtn" style="background:#0077cc;color:white;border:none;padding:10px 25px;margin:10px;border-radius:8px;cursor:pointer;font-size:15px;transition:0.2s;">💾 Backup Data</button>
+  <button id="restoreBtn" style="background:#00aa66;color:white;border:none;padding:10px 25px;margin:10px;border-radius:8px;cursor:pointer;font-size:15px;transition:0.2s;">🔄 Restore Data</button>
+  <input type="file" id="restoreFile" style="display:none;" accept=".json">
+</div>
+
+<script>
+  // --- Backup: Download all localStorage data as JSON ---
+  document.getElementById('backupBtn').addEventListener('click', () => {
+    if (localStorage.length === 0) {
+      alert("❌ LocalStorage मा हाल कुनै डेटा छैन!");
+      return;
+    }
+
+    const allData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      allData[key] = localStorage.getItem(key);
+    }
+
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "backup_" + new Date().toISOString().split('T')[0] + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert("✅ Backup file downloaded successfully!");
+  });
+
+  // --- Restore: Select and load JSON file into localStorage ---
+  document.getElementById('restoreBtn').addEventListener('click', () => {
+    document.getElementById('restoreFile').click();
+  });
+
+  document.getElementById('restoreFile').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!confirm("⚠️ यो कार्यले पुरानो data माथि लेख्नेछ। जारी राख्ने?")) return;
+
+        for (const key in data) {
+          localStorage.setItem(key, data[key]);
+        }
+        alert("✅ Data restored successfully! कृपया पेज Refresh गर्नुहोस्।");
+      } catch (err) {
+        alert("❌ Restore failed: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+</script>
+
 </html>
