@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IRD E-Services Portal</title>
+  <title>Aruns E-Services Portal</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:"Segoe UI",Arial,sans-serif;background:#f0f4fb;color:#333;height:100vh;}
@@ -36,12 +36,12 @@
 
 <div id="loginPage">
   <div class="login-box">
-    <h2>Arun Login Portal</h2>
+    <h2> 𝐋𝐨𝐠 𝐈𝐧 ʕʘ̅͜ʘ̅ʔ</h2>
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
-    <div class="error-msg" id="error">Invalid username or password!</div>
+    <div class="error-msg" id="error"> 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐔𝐬𝐞𝐫𝐧𝐚𝐦𝐞 𝐨𝐫 𝐏𝐚𝐬𝐬𝐰𝐨𝐫𝐝 ❌</div>
     <button onclick="login()">Login</button>
-    <p style="font-size:12px;margin-top:10px;">Use Info <b>Admin</b> / <b>*****</b></p>
+    <p style="font-size:12px;margin-top:10px;">Please Use Correct Info To Login <b></b>...... <b></b></p>
   </div>
 </div>
 
@@ -49,54 +49,55 @@
   <header>
     <img src="https://ird.gov.np/img/logo.png" alt="IRD Logo" onerror="this.style.display='none'">
     <div class="title">
-      <h1>आन्तरिक राजस्व विभाग</h1>
-      <p>Inland Revenue Department, Government of Nepal</p>
+      <h1> ⲯ﹍︿﹍︿﹍ 𝓦𝓮𝓵𝓬𝓸𝓶𝓮 ﹍ⲯ﹍ⲯ﹍︿﹍☼ </h1>
+      <p> 𝐃𝐚𝐭𝐚𝐛𝐚𝐬𝐞 𝐖𝐢𝐭𝐡 𝐂𝐥𝐨𝐮𝐝 𝐃𝐞𝐩𝐚𝐫𝐭𝐦𝐞𝐧𝐭, 𝐆𝐨𝐯𝐞𝐫𝐧𝐦𝐞𝐧𝐭 𝐨𝐟 𝐍𝐞𝐩𝐚𝐥</p>
     </div>
     <img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Flag_of_Nepal.svg" alt="Nepal Flag">
   </header>
 
   <div class="container">
     <div class="sidebar">
-      <h3>Online E-Services</h3>
+      <h3>𝐎𝐧𝐥𝐢𝐧𝐞 𝐄-𝐒𝐞𝐫𝐯𝐢𝐜𝐞𝐬</h3>
       <div class="folder">
-        <div onclick="toggleFolder(this)">📁 Integrated Tax System</div>
+        <div onclick="toggleFolder(this)">📁 𝐀𝐛𝐨𝐮𝐭-𝐚𝐝𝐦𝐢𝐧</div>
         <ul>
-          <li><a href="https://ird.gov.np" target="contentFrame">General</a></li>
-          <li><a href="https://ird.gov.np/pan" target="contentFrame">Registration (PAN,VAT,EXCISE)</a></li>
-          <li><a href="https://ird.gov.np/vat" target="contentFrame">VAT</a></li>
+          <li><a href="https://dreamwaver2020.github.io/Boost-nepal/" target="contentFrame">🗁 General</a></li>
+          <li><a href="https://ird.gov.np/pan" target="contentFrame">🗁 Personal</a></li>
+          <li><a href="https://ird.gov.np/vat" target="contentFrame">🗁 Public</a></li>
         </ul>
       </div>
       <div class="folder">
-        <div onclick="toggleFolder(this)">📁 Esewa</div>
+        <div onclick="toggleFolder(this)">📁 𝐆𝐨𝐨𝐠𝐥𝐞 𝐃𝐫𝐢𝐯𝐞</div>
         <ul>
-          <li><a href="#" onclick="loadEsewaForm()">Form Submission</a></li>
-          <li><a href="#" onclick="loadCertificate()">Download Certificate</a></li>
+          <li><a href="Collector Entry/collector-entry.html" target="contentFrame">🗁 Construction...</a></li>
         </ul>
       </div>
-    <div class="folder">
-        <div onclick="toggleFolder(this)">📁 Collector Entry</div>
+      <div class="folder">
+        <div onclick="toggleFolder(this)">📁 𝐄-𝐬𝐞𝐰𝐚</div>
         <ul>
-          <li><a href="Collector Entry/collector-entry.html" target="contentFrame">Collector Entry</a></li>
+          <li><a href="#" onclick="loadEsewaForm()">🗁 Form Submission</a></li>
+          <li><a href="#" onclick="loadCertificate()">🗁 Download Certificate</a></li>
         </ul>
       </div>
     
+    
       <div class="folder">
-        <div onclick="toggleFolder(this)">📁 Banks</div>
+        <div onclick="toggleFolder(this)">📁 𝐁𝐚𝐧𝐤𝐬</div>
         <ul>
-          <li><a href="Online E-Services/Banks/bank-statement-update.html" target="contentFrame">Bank Statement Updater</a></li>\n          <li><a href="Online E-Services/Banks/statement-download.html" target="contentFrame">Statement Download</a></li>
+          <li><a href="Online E-Services/Banks/bank-statement-update.html" target="contentFrame">🗁 Bank Update</a></li>          <li><a href="Online E-Services/Banks/statement-download.html" target="contentFrame">🗁 Statement Download</a></li>
         </ul>
       </div>
       <div class="folder">
-        <div onclick="toggleFolder(this)">📁 Collector</div>
+        <div onclick="toggleFolder(this)">📁  𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐨𝐫𝐬 𝐄𝐧𝐭𝐫𝐲</div>
         <ul>
-          <li><a href="Online E-Services/Collector/collector-details.html" target="contentFrame">Collector Details</a></li>\n          <li><a href="Online E-Services/Collector/collector-download.html" target="contentFrame">Collector Download</a></li>
+          <li><a href="Online E-Services/Collector/collector-details.html" target="contentFrame">🗁 Collector Details</a></li>         <li><a href="Online E-Services/Collector/collector-download.html" target="contentFrame">🗁 Record Download</a></li>
         </ul>
       </div>
     </div>
     <main><iframe name="contentFrame" id="contentFrame"></iframe></main>
   </div>
 
-  <footer>© 2025 Inland Revenue Department, Government of Nepal</footer>
+  <footer>© 2025 𝐃𝐚𝐭𝐚𝐛𝐚𝐬𝐞 𝐖𝐢𝐭𝐡 𝐂𝐥𝐨𝐮𝐝 𝐃𝐞𝐩𝐚𝐫𝐭𝐦𝐞𝐧𝐭, 𝐆𝐨𝐯𝐞𝐫𝐧𝐦𝐞𝐧𝐭 𝐨𝐟 𝐍𝐞𝐩𝐚𝐥</footer>
 </div>
 
 <script>
@@ -146,11 +147,11 @@ th{background:#003366;color:#fff;}
 </style></head><body>
 <div class='form-container'>
 <form id='esewaForm'>
-<h2>Esewa Form Submission</h2>
+<h2>𝓔-𝓼𝓮𝔀𝓪  𝓕𝓸𝓻𝓶  𝓢𝓾𝓫𝓶𝓲𝓼𝓼𝓲𝓸𝓷</h2>
 <div class='grid'>
-<div><label>Date</label><input type='date' id='date' required></div>
-<div><label>Esewa TRX Code</label><input type='text' id='trx' placeholder='Enter Esewa Transaction Code' required></div>
-<div><label>Sender Name</label><input type='text' id='sender' placeholder='Enter Sender Name' required></div>
+<div><label>Date & Time</label><input type='text' id='date' required></div>
+<div><label>Reference Code</label><input type='text' id='trx' placeholder='Enter Esewa Transaction Code' required></div>
+<div><label>Initiator Name</label><input type='text' id='sender' placeholder='Enter Sender Name' required></div>
 <div><label>Amount (NPR)</label><input type='number' id='amount' placeholder='Enter Amount' min='0' required></div>
 <div><label>Status</label><select id='status'><option>Pending</option><option>Approved</option><option>Failed</option></select></div>
 </div>
@@ -326,7 +327,7 @@ table{width:100%;border-collapse:collapse;}
 th,td{border:1px solid:#000;padding:6px;text-align:center;}
 th{background:#f0f0f0;}
 @media print{button{display:none}}</style></head><body>
-<h2>Esewa Form Submission Certificate</h2>
+<h2>𝓔𝓼𝓮𝔀𝓪 𝓕𝓸𝓻𝓶 𝓢𝓾𝓫𝓶𝓲𝓼𝓼𝓲𝓸𝓷 𝓒𝓮𝓻𝓽𝓲𝓯𝓲𝓬𝓪𝓽𝓮</h2>
 <button onclick="window.print()">📄 Download Certificate (PDF)</button>
 <table id='tbl'><thead><tr><th>#</th><th>Date</th><th>TRX Code</th><th>Sender</th><th>Amount (NPR)</th><th>Status</th></tr></thead><tbody></tbody></table>
 <script>
