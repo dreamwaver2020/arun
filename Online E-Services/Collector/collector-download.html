@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Collector Download</title>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Collector Download</title>
 <style>
   body{font-family:Segoe UI,Arial;color:#123;background:#f7fbfc;padding:16px}
   .card{max-width:1100px;margin:auto;background:#fff;padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(10,30,60,0.06)}
@@ -13,7 +16,9 @@
   .right{text-align:right}
   button{padding:8px 10px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
   @media print{button{display:none}}
-</style></head><body>
+</style>
+</head>
+<body>
 <div class="card">
   <h1>Collector Download (Datewise Archive)</h1>
   <div class="controls">
@@ -32,7 +37,15 @@
 
   <div style="overflow:auto;max-height:540px">
     <table id="tbl">
-      <thead><tr><th>#</th><th>Particulars</th><th class="right">Total</th><th class="right">Total Received</th><th class="right">Difference</th><th>Status</th></tr></thead>
+      <thead>
+        <tr>
+          <th>#</th><th>Particulars</th><th class="right">Saving</th>
+          <th class="right">Loan</th><th class="right">Total</th>
+          <th class="right">NCBL</th><th class="right">ESEWA</th>
+          <th class="right">CASH</th><th class="right">KHATA</th>
+          <th class="right">Total Received</th><th class="right">Difference</th><th>Status</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
@@ -40,59 +53,147 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-function loadHistory(){try{return JSON.parse(localStorage.getItem('collectorHistory_v1')||'{}')}catch(e){return {}}}
-function renderForDate(date){
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('collectorHistory_v1') || '{}'); }
+  catch(e) { return {}; }
+}
+
+function renderForDate(date) {
   const history = loadHistory();
-  const tbody=document.querySelector('#tbl tbody'); tbody.innerHTML='';
-  if(!history[date]){tbody.innerHTML='<tr><td colspan=6 style="text-align:center;padding:18px;color:#666">No data for selected date.</td></tr>'; document.getElementById('info').textContent=''; return [];}
-  const arr=history[date];
-  arr.forEach((r,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${r.name}</td><td class="right">${r.total}</td><td class="right">${r.totalReceived}</td><td class="right">${r.difference}</td><td>${r.status}</td>`;
+  const tbody = document.querySelector('#tbl tbody');
+  tbody.innerHTML = '';
+
+  if (!history[date]) {
+    tbody.innerHTML = '<tr><td colspan=12 style="text-align:center;padding:18px;color:#666">No data for selected date.</td></tr>';
+    document.getElementById('info').textContent = '';
+    return [];
+  }
+
+  const seen = new Set();
+  const arr = history[date].filter(r => {
+    const key = r.name + r.saving + r.loan + r.total + r.totalReceived; 
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  arr.forEach((r, i) => {
+    const { name, saving, loan, total, ncbl, esewa, cash, khata, totalReceived, difference, status } = r;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${name}</td>
+      <td class='right'>${saving}</td>
+      <td class='right'>${loan}</td>
+      <td class='right'>${total}</td>
+      <td class='right'>${ncbl}</td>
+      <td class='right'>${esewa}</td>
+      <td class='right'>${cash}</td>
+      <td class='right'>${khata}</td>
+      <td class='right'>${totalReceived}</td>
+      <td class='right'>${difference}</td>
+      <td>${status}</td>`;
     tbody.appendChild(tr);
   });
-  document.getElementById('info').textContent=`Records for ${date}: ${arr.length}`;
+
+  document.getElementById('info').textContent = `Records for ${date}: ${arr.length}`;
   return arr;
 }
 
-document.getElementById('loadBtn').addEventListener('click',()=>{
-  const d=document.getElementById('dateSel').value; if(!d){alert('Please select a date');return;} renderForDate(d);
-});
-document.getElementById('showAll').addEventListener('click',()=>{
-  const history=loadHistory(); const tbody=document.querySelector('#tbl tbody'); tbody.innerHTML='';
-  const keys=Object.keys(history).sort((a,b)=>b.localeCompare(a));
-  if(!keys.length){tbody.innerHTML='<tr><td colspan=6 style="text-align:center;padding:18px;color:#666">No history saved yet.</td></tr>'; return;}
-  let count=0;
-  keys.forEach(date=>{ const arr=history[date]; arr.forEach((r,i)=>{count++; const tr=document.createElement('tr'); tr.innerHTML=`<td>${count}</td><td>${r.name} <small style="color:#666">(${date})</small></td><td class="right">${r.total}</td><td class="right">${r.totalReceived}</td><td class="right">${r.difference}</td><td>${r.status}</td>`; tbody.appendChild(tr); }); });
-  document.getElementById('info').textContent=`Showing all dates — total rows: ${count}`;
+document.getElementById('loadBtn').addEventListener('click', () => {
+  const d = document.getElementById('dateSel').value;
+  if (!d) { alert('Please select a date'); return; }
+  renderForDate(d);
 });
 
-function exportCSV(arr,date){
-  if(!arr||!arr.length){alert('No data');return;}
-  const header=['#','Name','Total','TotalReceived','Difference','Status','Date'];
-  const rows=arr.map((r,i)=>[i+1,r.name,r.total,r.totalReceived,r.difference,r.status,date||'']);
-  const csv=[header.join(','),...rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(','))].join('\\n');
-  const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='collector_'+(date||'all')+'.csv'; a.click(); URL.revokeObjectURL(url);
+document.getElementById('showAll').addEventListener('click', () => {
+  const history = loadHistory();
+  const tbody = document.querySelector('#tbl tbody');
+  tbody.innerHTML = '';
+  const keys = Object.keys(history).sort((a, b) => b.localeCompare(a));
+  if (!keys.length) {
+    tbody.innerHTML = '<tr><td colspan=12 style="text-align:center;padding:18px;color:#666">No history saved yet.</td></tr>';
+    return;
+  }
+  let count = 0;
+  keys.forEach(date => {
+    const seen = new Set();
+    const arr = history[date].filter(r => {
+      const key = r.name + r.saving + r.loan + r.total + r.totalReceived;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    arr.forEach(r => {
+      count++;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${count}</td>
+        <td>${r.name} <small style="color:#666">(${date})</small></td>
+        <td class="right">${r.total}</td>
+        <td class="right">${r.totalReceived}</td>
+        <td class="right">${r.difference}</td>
+        <td>${r.status}</td>`;
+      tbody.appendChild(tr);
+    });
+  });
+  document.getElementById('info').textContent = `Showing all dates — total rows: ${count}`;
+});
+
+function exportCSV(arr, date) {
+  if (!arr || !arr.length) { alert('No data'); return; }
+  const header = ['#','Name','Saving','Loan','Total','NCBL','ESEWA','CASH','KHATA','TotalReceived','Difference','Status','Date'];
+  const rows = arr.map((r,i)=>[i+1,r.name,r.saving,r.loan,r.total,r.ncbl,r.esewa,r.cash,r.khata,r.totalReceived,r.difference,r.status,date||'']);
+  const csv = [header.join(','), ...rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'collector_'+(date||'all')+'.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
-function exportXLS(arr,date){
-  if(!arr||!arr.length){alert('No data');return;}
-  let html='<table border=1><tr><th>#</th><th>Name</th><th>Total</th><th>TotalReceived</th><th>Difference</th><th>Status</th><th>Date</th></tr>';
-  arr.forEach((r,i)=>{html+=`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.total}</td><td>${r.totalReceived}</td><td>${r.difference}</td><td>${r.status}</td><td>${date||''}</td></tr>`});
-  html+='</table>'; const blob=new Blob([html],{type:'application/vnd.ms-excel'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='collector_'+(date||'all')+'.xls'; a.click(); URL.revokeObjectURL(url);
+
+function exportXLS(arr, date) {
+  if (!arr || !arr.length) { alert('No data'); return; }
+  let html = '<table border=1><tr><th>#</th><th>Name</th><th>Saving</th><th>Loan</th><th>Total</th><th>NCBL</th><th>ESEWA</th><th>CASH</th><th>KHATA</th><th>TotalReceived</th><th>Difference</th><th>Status</th><th>Date</th></tr>';
+  arr.forEach((r,i)=>{
+    html += `<tr><td>${i+1}</td><td>${r.name}</td><td>${r.saving}</td><td>${r.loan}</td><td>${r.total}</td><td>${r.ncbl}</td><td>${r.esewa}</td><td>${r.cash}</td><td>${r.khata}</td><td>${r.totalReceived}</td><td>${r.difference}</td><td>${r.status}</td><td>${date||''}</td></tr>`;
+  });
+  html += '</table>';
+  const blob = new Blob([html], {type:'application/vnd.ms-excel'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'collector_'+(date||'all')+'.xls'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 document.getElementById('exportCSV').addEventListener('click',()=>{
-  const d=document.getElementById('dateSel').value; if(!d){alert('Please select date or click Show All then export from table view');return;} exportCSV(renderForDate(d),d);
+  const d=document.getElementById('dateSel').value;
+  if(!d){alert('Please select date or click Show All then export from table view');return;}
+  exportCSV(renderForDate(d),d);
 });
 document.getElementById('exportXLS').addEventListener('click',()=>{
-  const d=document.getElementById('dateSel').value; if(!d){alert('Please select date or click Show All then export from table view');return;} exportXLS(renderForDate(d),d);
+  const d=document.getElementById('dateSel').value;
+  if(!d){alert('Please select date or click Show All then export from table view');return;}
+  exportXLS(renderForDate(d),d);
 });
 document.getElementById('printBtn').addEventListener('click',()=>window.print());
 
 document.getElementById('exportPDF').addEventListener('click',()=>{
-  const { jsPDF } = window.jspdf; const doc = new jsPDF('p','pt','a4'); doc.setFontSize(14); const d=document.getElementById('dateSel').value; doc.text('Collector Report '+(d||''),40,40);
-  const arr = renderForDate(d); let y=70; doc.setFontSize(10);
-  arr.forEach((r,i)=>{ doc.text(`${i+1}. ${r.name} — Total: ${r.total} Received: ${r.totalReceived} Diff: ${r.difference} Status: ${r.status}`,40,y); y+=16; if(y>740){doc.addPage(); y=40;} });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','pt','a4');
+  doc.setFontSize(14);
+  const d=document.getElementById('dateSel').value;
+  doc.text('Collector Report '+(d||''),40,40);
+  const arr = renderForDate(d);
+  let y=70;
+  doc.setFontSize(10);
+  arr.forEach((r,i)=>{
+    doc.text(`${i+1}. ${r.name} — Total: ${r.total} Received: ${r.totalReceived} Diff: ${r.difference} Status: ${r.status}`,40,y);
+    y+=16; if(y>740){doc.addPage(); y=40;}
+  });
   doc.save('collector_report_'+(d||'')+'.pdf');
 });
-</script></body></html>
+</script>
+</body>
+</html>
