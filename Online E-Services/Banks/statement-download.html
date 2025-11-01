@@ -1,128 +1,280 @@
 <!doctype html>
-<html lang="en">
+<html lang="ne">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Bank Statement Download</title>
-<style>
-  body{font-family:Segoe UI,Arial,sans-serif;background:#f6f9fc;margin:0;padding:18px;color:#123;}
-  .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(10,30,60,0.06);max-width:1100px;margin:auto;}
-  h1{color:#075985;margin-bottom:6px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-  button{padding:8px 12px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{padding:8px;border:1px solid #e6eef6;text-align:left;font-size:14px}
-  th{background:#eef6ff;color:#064e3b}
-  .right{text-align:right}
-  .small{font-size:13px;color:#666}
-  .filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input[type=date],input[type=text]{padding:6px;border:1px solid #cbd5e1;border-radius:6px}
-  @media print{button{display:none}.controls{display:none}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>𝓑𝓪𝓷𝓴 𝓢𝓽𝓪𝓽𝓮𝓶𝓮𝓷𝓽</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; }
+    .hidden-row { display:none; }
+  </style>
 </head>
-<body>
-<div class="card">
-  <h1>Bank Statement Download</h1>
-  <div class="small">Report is loaded from local browser storage key: <code>bank_statement_html_v2</code></div>
+<body class="bg-gray-50 min-h-screen antialiased">
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-sky-700">𝓑𝓪𝓷𝓴 𝓢𝓽𝓪𝓽𝓮𝓶𝓮𝓷𝓽</h1>
+      <p class="text-sm text-gray-600">𝐂𝐥𝐢𝐜𝐤 "𝐕𝐢𝐞𝐰" 𝐭𝐨 𝐬𝐞𝐞 𝐝𝐞𝐭𝐚𝐢𝐥𝐞𝐝 𝐭𝐫𝐚𝐧𝐬𝐚𝐜𝐭𝐢𝐨𝐧𝐬. <span id="storageKey" class="mono"></span>)</p>
+    </header>
 
-  <div class="controls">
-    <div class="filters">
-      <label>From <input id="fromDate" type="date"></label>
-      <label>To <input id="toDate" type="date"></label>
-      <label>Bank <input id="bankFilter" type="text" placeholder="leave blank for all"></label>
-      <button id="apply">Apply Filter</button>
-      <button id="clear">Clear</button>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <main class="lg:col-span-3 bg-white p-6 rounded-2xl shadow">
+        <div class="flex gap-3 mb-4">
+          <input id="globalSearch" placeholder="Search bank, date, txn id, type, amount..." class="flex-1 p-2 border rounded" />
+          <select id="bankFilter" class="p-2 border rounded">
+            <option value="">— All Banks —</option>
+          </select>
+          <button id="exportAllBtn" class="px-4 py-2 bg-sky-600 text-white rounded">Export All CSV</button>
+          <button id="savePdfBtn" class="px-4 py-2 bg-rose-600 text-white rounded">Save PDF</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto border-collapse">
+            <thead>
+              <tr class="text-left text-sm text-gray-500 border-b">
+                <th class="p-2">#</th>
+                <th class="p-2">Bank</th>
+                <th class="p-2">Date</th>
+                <th class="p-2 text-right">Opening</th>
+                <th class="p-2 text-right">Total Receipt</th>
+                <th class="p-2 text-right">Total Payment</th>
+                <th class="p-2 text-right">Closing</th>
+                <th class="p-2">Txns</th>
+                <th class="p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rowsBody">
+              <tr><td colspan="9" class="p-4 text-center text-gray-500">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+
+      <aside class="bg-white p-6 rounded-2xl shadow">
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-gray-700">Stats</h3>
+          <div class="mt-3 text-sm text-gray-600">
+            <div>Rows: <span id="rowsCount" class="mono">0</span></div>
+            <div>Total Receipt: <span id="sumReceipt" class="mono">0.00</span></div>
+            <div>Total Payment: <span id="sumPayment" class="mono">0.00</span></div>
+            <div>Net: <span id="netTotal" class="mono">0.00</span></div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="text-sm font-medium text-gray-700 mb-2">Selected Transaction Details</h4>
+          <div id="txnDetails" class="text-sm text-gray-700 mono text-xs">No selection</div>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 mb-2">Quick Filters</h4>
+          <div class="space-y-2 text-sm">
+            <button class="quickFilterBtn px-3 py-1 border rounded" data-val="">All</button>
+            <button class="quickFilterBtn px-3 py-1 border rounded" data-val="receipt">Receipts</button>
+            <button class="quickFilterBtn px-3 py-1 border rounded" data-val="payment">Payments</button>
+          </div>
+        </div>
+      </aside>
     </div>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <button id="exportCSV">Export CSV</button>
-      <button id="exportXLS">Export Excel (.xls)</button>
-      <button id="exportPDF">Export PDF</button>
-      <button id="printBtn">Print</button>
-    </div>
+
+    <footer class="mt-6 text-sm text-gray-500 text-center">This statement is powered by dreamwaver under copyright 2025.</footer>
   </div>
 
-  <div id="summary" class="small"></div>
-
-  <div style="overflow:auto;max-height:540px">
-    <table id="tbl">
-      <thead>
-        <tr><th>Bank</th><th>Date</th><th class="right">Opening</th><th class="right">Txn (type)</th><th class="right">Closing</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-function fmt(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
-function load(){try{return JSON.parse(localStorage.getItem('bank_statement_html_v2')||'[]')}catch(e){return []}}
-function render(list){
-  const tbody=document.querySelector('#tbl tbody'); tbody.innerHTML='';
-  if(!list.length){tbody.innerHTML='<tr><td colspan=5 style="text-align:center;padding:18px;color:#666">No records found.</td></tr>'; return;}
-  let totalOpen=0,totalTxn=0,totalClose=0;
-  list.sort((a,b)=> (a.date < b.date?1:-1));
-  for(const r of list){
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.bankName||''}</td>
-      <td>${r.date||''}</td>
-      <td class="right">${fmt(r.openingBalance)}</td>
-      <td class="right">${fmt(r.todaysTransaction)} (${r.txnType||''})</td>
-      <td class="right">${fmt(r.closingBalance)}</td>`;
-    tbody.appendChild(tr);
-    totalOpen+=Number(r.openingBalance||0); totalTxn+=Number(r.todaysTransaction||0); totalClose+=Number(r.closingBalance||0);
+(function(){
+  const STORAGE_KEY = 'bank_stmt_final_v1';
+  document.getElementById('storageKey').textContent = STORAGE_KEY;
+
+  const rowsBody = document.getElementById('rowsBody');
+  const rowsCount = document.getElementById('rowsCount');
+  const sumReceiptEl = document.getElementById('sumReceipt');
+  const sumPaymentEl = document.getElementById('sumPayment');
+  const netTotalEl = document.getElementById('netTotal');
+  const txnDetails = document.getElementById('txnDetails');
+  const globalSearch = document.getElementById('globalSearch');
+  const bankFilter = document.getElementById('bankFilter');
+  const exportAllBtn = document.getElementById('exportAllBtn');
+  const savePdfBtn = document.getElementById('savePdfBtn');
+
+  let summaries = [];
+  let quickType = '';
+
+  function load(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    summaries = raw ? JSON.parse(raw) : [];
+    summaries.sort((a,b)=> a.bank.localeCompare(b.bank) || a.date.localeCompare(b.date));
+    populateBankFilter();
+    render();
   }
-  document.getElementById('summary').textContent = `Records: ${list.length} — Opening Total: ${fmt(totalOpen)} | Txn Total: ${fmt(totalTxn)} | Closing Total: ${fmt(totalClose)}`;
-}
 
-function applyFilter(){
-  const from=document.getElementById('fromDate').value;
-  const to=document.getElementById('toDate').value;
-  const bank=document.getElementById('bankFilter').value.trim().toLowerCase();
-  let list=load();
-  if(from) list = list.filter(r=>r.date>=from);
-  if(to) list = list.filter(r=>r.date<=to);
-  if(bank) list = list.filter(r=>(r.bankName||'').toLowerCase().includes(bank));
-  render(list);
-  return list;
-}
+  function populateBankFilter(){
+    const banks = Array.from(new Set(summaries.map(s=>s.bank))).sort();
+    bankFilter.innerHTML = '<option value="">— All Banks —</option>' + banks.map(b=>`<option value="${b}">${b}</option>`).join('');
+  }
 
-document.getElementById('apply').addEventListener('click',()=>applyFilter());
-document.getElementById('clear').addEventListener('click',()=>{document.getElementById('fromDate').value='';document.getElementById('toDate').value='';document.getElementById('bankFilter').value='';render(load());});
+  function formatMoney(n){ return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function escapeForId(s){ return (s||'').replace(/[^a-z0-9_-]/ig,'_'); }
 
-// CSV/XLS export helpers
-function exportCSV(list){
-  if(!list.length){alert('No data');return;}
-  const header=['Bank','Date','Opening','Txn','TxnType','Closing'];
-  const rows=list.map(r=>[r.bankName,r.date,r.openingBalance,r.todaysTransaction,r.txnType,r.closingBalance]);
-  const csv=[header.join(','),...rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(','))].join('\\n');
-  const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='bank_statements.csv'; a.click(); URL.revokeObjectURL(url);
-}
-function exportXLS(list){
-  if(!list.length){alert('No data');return;}
-  let html='<table border=1><tr><th>Bank</th><th>Date</th><th>Opening</th><th>Txn</th><th>TxnType</th><th>Closing</th></tr>';
-  list.forEach(r=>{html+=`<tr><td>${r.bankName}</td><td>${r.date}</td><td>${r.openingBalance}</td><td>${r.todaysTransaction}</td><td>${r.txnType}</td><td>${r.closingBalance}</td></tr>`});
-  html+='</table>';
-  const blob=new Blob([html],{type:'application/vnd.ms-excel'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='bank_statements.xls'; a.click(); URL.revokeObjectURL(url);
-}
+  function render(){
+    const q = (globalSearch.value||'').toLowerCase().trim();
+    const bankVal = bankFilter.value;
+    let visible = summaries.filter(s=>{
+      if(bankVal && s.bank !== bankVal) return false;
+      if(quickType){
+        const has = (s.details||[]).some(d=>d.type===quickType);
+        if(!has) return false;
+      }
+      if(!q) return true;
+      if(`${s.bank} ${s.date}`.toLowerCase().includes(q)) return true;
+      for(const d of s.details||[]){
+        if(d.id && d.id.toLowerCase().includes(q)) return true;
+        if(d.type && d.type.toLowerCase().includes(q)) return true;
+        if(String(d.amount).toLowerCase().includes(q)) return true;
+      }
+      return false;
+    });
 
-document.getElementById('exportCSV').addEventListener('click',()=>exportCSV(applyFilter()));
-document.getElementById('exportXLS').addEventListener('click',()=>exportXLS(applyFilter()));
-document.getElementById('printBtn').addEventListener('click',()=>window.print());
+    if(!visible.length){
+      rowsBody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">No records found.</td></tr>';
+      rowsCount.textContent = 0;
+      sumReceiptEl.textContent = '0.00';
+      sumPaymentEl.textContent = '0.00';
+      netTotalEl.textContent = '0.00';
+      return;
+    }
 
-document.getElementById('exportPDF').addEventListener('click',()=>{
-  const { jsPDF } = window.jspdf; const doc = new jsPDF('p','pt','a4'); doc.setFontSize(14); doc.text('Bank Statement Report',40,40);
-  const list = applyFilter(); let y=70;
-  doc.setFontSize(10);
-  list.forEach(r=>{
-    doc.text(`${r.date} — ${r.bankName} — Opening: ${Number(r.openingBalance||0).toFixed(2)} Txn: ${Number(r.todaysTransaction||0).toFixed(2)} Closing: ${Number(r.closingBalance||0).toFixed(2)}`,40,y);
-    y+=18; if(y>740){doc.addPage(); y=40;}
-  });
-  doc.save('bank_statements.pdf');
-});
+    let html = '';
+    let idx = 0;
+    let totalReceipt = 0, totalPayment=0, net=0;
+    for(const s of visible){
+      idx++;
+      totalReceipt += Number(s.totalReceipt||0);
+      totalPayment += Number(s.totalPayment||0);
+      net += (Number(s.closing||0) - Number(s.opening||0));
+      const rowId = `row-${idx}`;
+      html += `<tr class="border-b">
+        <td class="p-2 align-top">${idx}</td>
+        <td class="p-2 align-top">${s.bank}</td>
+        <td class="p-2 align-top mono">${s.date}</td>
+        <td class="p-2 text-right mono">${formatMoney(s.opening)}</td>
+        <td class="p-2 text-right mono">${formatMoney(s.totalReceipt)}</td>
+        <td class="p-2 text-right mono">${formatMoney(s.totalPayment)}</td>
+        <td class="p-2 text-right mono">${formatMoney(s.closing)}</td>
+        <td class="p-2 align-top">
+          <button class="viewTxnsBtn px-2 py-1 border rounded" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}">View (${(s.details||[]).length})</button>
+        </td>
+        <td class="p-2 align-top">
+          <button class="exportRowBtn px-2 py-1 border rounded" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}">✔️</button>
+          </td>
+      </tr>
+      <tr class="hidden-row" id="details-${escapeForId(s.bank)}-${s.date}">
+        <td colspan="9" class="p-3 bg-gray-50">
+          <div class="text-sm mb-2"><strong>Transactions for ${s.bank} — ${s.date}:</strong></div>
+          <ul class="text-xs mono" id="txn-list-${escapeForId(s.bank)}-${s.date}">
+            ${(s.details||[]).map(d=>`<li class="mb-1">${d.time} — ${d.type.toUpperCase()} ${formatMoney(d.amount)}
+                <button class="delTxnBtn ml-2 text-red-600" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}" data-id="${d.id}">Delete</button>
+                <button class="showTxnBtn ml-1 px-1 py-0.5 text-xs border rounded" data-json='${escapeHtml(JSON.stringify(d))}'>Show</button>
+              </li>`).join('') || '<li class="text-gray-500">No details</li>'}
+          </ul>
+        </td>
+      </tr>`;
+    }
 
-// initial render
-render(load());
+    rowsBody.innerHTML = html;
+    rowsCount.textContent = visible.length;
+    sumReceiptEl.textContent = formatMoney(totalReceipt);
+    sumPaymentEl.textContent = formatMoney(totalPayment);
+    netTotalEl.textContent = formatMoney(net);
+
+    // all event bindings (same as original)
+    document.querySelectorAll('.viewTxnsBtn').forEach(btn=>{
+      btn.onclick=e=>{
+        const bank=e.currentTarget.dataset.bank, date=e.currentTarget.dataset.date;
+        const el=document.getElementById(`details-${escapeForId(bank)}-${date}`);
+        el.style.display=(el.style.display==='table-row')?'none':'table-row';
+      };
+    });
+
+    document.querySelectorAll('.delDayBtn').forEach(btn=>{
+      btn.onclick=e=>{
+        const bank=e.currentTarget.dataset.bank, date=e.currentTarget.dataset.date;
+        if(!confirm(`Delete all transactions for ${bank} on ${date}?`))return;
+        summaries=summaries.filter(s=>!(s.bank===bank&&s.date===date));
+        save();
+      };
+    });
+
+    document.querySelectorAll('.delTxnBtn').forEach(btn=>{
+      btn.onclick=e=>{
+        const {bank,date,id}=e.currentTarget.dataset;
+        if(!confirm('Delete this transaction?'))return;
+        const s=summaries.find(x=>x.bank===bank&&x.date===date);
+        if(!s)return;
+        s.details=s.details.filter(d=>d.id!==id);
+        save();
+      };
+    });
+
+    document.querySelectorAll('.showTxnBtn').forEach(btn=>{
+      btn.onclick=e=>{
+        txnDetails.textContent=JSON.stringify(JSON.parse(e.currentTarget.dataset.json),null,2);
+      };
+    });
+
+    document.querySelectorAll('.exportRowBtn').forEach(btn=>{
+      btn.onclick=e=>{
+        const {bank,date}=e.currentTarget.dataset;
+        const s=summaries.find(x=>x.bank===bank&&x.date===date);
+        if(!s)return;
+        const rows=[['Bank','Date','Opening','TotalReceipt','TotalPayment','Closing'],
+        [s.bank,s.date,s.opening,s.totalReceipt,s.totalPayment,s.closing],[],
+        ['Bank','Date','TxnID','Time','Type','Amount'],
+        ...(s.details||[]).map(d=>[s.bank,s.date,d.id,d.time,d.type,d.amount])];
+        downloadCSV(rows,`bank_${s.bank}_${s.date}.csv`);
+      };
+    });
+  }
+
+  function downloadCSV(rows,filename){
+    const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(summaries));
+    load();
+  }
+
+  globalSearch.oninput=render; bankFilter.onchange=render;
+  document.querySelectorAll('.quickFilterBtn').forEach(b=>b.onclick=e=>{quickType=e.target.dataset.val;render();});
+  exportAllBtn.onclick=()=>{
+    const rows=[['Bank','Date','Opening','Receipt','Payment','Closing']];
+    summaries.forEach(s=>rows.push([s.bank,s.date,s.opening,s.totalReceipt,s.totalPayment,s.closing]));
+    downloadCSV(rows,'all_records.csv');
+  };
+
+  savePdfBtn.onclick=()=>{
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+    pdf.text('All Bank Records',40,30);
+    const tableData = summaries.map(s=>[s.bank,s.date,s.opening,s.totalReceipt,s.totalPayment,s.closing]);
+    pdf.autoTable({
+      head:[['Bank','Date','Opening','Receipt','Payment','Closing']],
+      body:tableData,
+      startY:50
+    });
+    pdf.save('bank_records.pdf');
+  };
+
+  load();
+})();
 </script>
 </body>
 </html>
