@@ -30,13 +30,27 @@
     main{background:#fff;}
     iframe{width:100%;height:100%;border:none;}
     footer{background:#002b5c;color:#fff;text-align:center;font-size:12px;padding:6px;}
+    .time-box{
+      display:flex;flex-direction:column;align-items:center;padding:6px 15px;border-radius:12px;
+      background:linear-gradient(135deg,#003366,#0077cc);
+      border:2px solid #00ffff;
+      box-shadow:0 0 15px rgba(0,255,255,0.5);
+      animation:pulse 3s infinite ease-in-out;
+    }
+    @keyframes pulse{
+      0%{box-shadow:0 0 10px rgba(0,255,255,0.4);}
+      50%{box-shadow:0 0 25px rgba(0,255,255,0.9);}
+      100%{box-shadow:0 0 10px rgba(0,255,255,0.4);}
+    }
+    .time-box .eng{font-size:15px;color:#aee2ff;}
+    .time-box .nep{font-size:14px;color:#ffea91;font-weight:600;}
   </style>
 </head>
 <body>
 
 <div id="loginPage">
   <div class="login-box">
-    <h2> 𝐋𝐨𝐠 𝐈𝐧 ʕʘ̅͜ʘ̅ʔ</h2>
+    <h2> 𝐋𝐨𝐠 𝐈𝐧 ʕʘ̅͜ʘ̅ʔ 🔐</h2>
     <input type="text" id="username" placeholder="Username">
     <input type="password" id="password" placeholder="Password">
     <div class="error-msg" id="error"> 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐔𝐬𝐞𝐫𝐧𝐚𝐦𝐞 𝐨𝐫 𝐏𝐚𝐬𝐬𝐰𝐨𝐫𝐝 ❌</div>
@@ -47,12 +61,19 @@
 
 <div id="mainPage">
   <header>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Small_gif.gif" alt="IRD Logo" onerror="this.style.display='none'">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Animated-nepal-flag-image-0007.gif" alt="Nepal Flag">
+      <div class="time-box">
+        <div class="eng" id="engTime">Loading...</div>
+        <div class="nep" id="nepTime">नेपाली मिति...</div>
+      </div>
+    </div>
     <div class="title">
+     
       <h1> ⲯ﹍︿﹍︿﹍ 𝓦𝓮𝓵𝓬𝓸𝓶𝓮 ﹍ⲯ﹍ⲯ﹍︿﹍☼ </h1>
       <p> 𝐃𝐚𝐭𝐚𝐛𝐚𝐬𝐞 𝐖𝐢𝐭𝐡 𝐂𝐥𝐨𝐮𝐝 𝐃𝐞𝐩𝐚𝐫𝐭𝐦𝐞𝐧𝐭, 𝐆𝐨𝐯𝐞𝐫𝐧𝐦𝐞𝐧𝐭 𝐨𝐟 𝐍𝐞𝐩𝐚𝐥</p>
     </div>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Animated-nepal-flag-image-0007.gif" alt="Nepal Flag">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Small_gif.gif" alt="IRD Logo" onerror="this.style.display='none'">
     
   </header>
 
@@ -115,7 +136,27 @@ function login(){
   }
 }
 function toggleFolder(el){el.parentElement.classList.toggle('open');}
-
+// 🕓 AUTO-UPDATING DUAL TIME (ENGLISH + NEPALI)
+function updateHeaderTime(){
+  const now=new Date();
+  const eng=now.toLocaleString('en-GB',{weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('engTime').textContent=eng;
+  document.getElementById('nepTime').textContent=getNepaliDateTime(now);
+}
+function getNepaliDateTime(date){
+  const npMonths=['बैशाख','जेठ','असार','साउन','भदौ','असोज','कात्तिक','मंसिर','पुष','माघ','फागुन','चैत'];
+  const npNumbers={'0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९'};
+  let y=date.getFullYear()+57;
+  let m=(date.getMonth()+1+8)%12;if(m===0)m=12;
+  let d=date.getDate();
+  const npDate=`${npMonths[m-1]} ${d}, ${y}`;
+  const h=String(date.getHours()).padStart(2,'0').replace(/[0-9]/g,d=>npNumbers[d]);
+  const mi=String(date.getMinutes()).padStart(2,'0').replace(/[0-9]/g,d=>npNumbers[d]);
+  const s=String(date.getSeconds()).padStart(2,'0').replace(/[0-9]/g,d=>npNumbers[d]);
+  return npDate.replace(/[0-9]/g,d=>npNumbers[d])+" ("+h+":"+mi+":"+s+")";
+}
+setInterval(updateHeaderTime,1000);
+updateHeaderTime();
 function loadEsewaForm(){
 const f=document.getElementById('contentFrame');
 f.srcdoc=`<html><head><meta charset='utf-8'><title>Esewa Form</title>
