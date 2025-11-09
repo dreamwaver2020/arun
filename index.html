@@ -478,31 +478,50 @@ import { initFirebase, loadKey, saveKey, subscribeKey } from './firebase-sync.js
 </div>
 
 <script>
-  // --- Backup: Download all localStorage data as JSON ---
-  document.getElementById('backupBtn').addEventListener('click', () => {
-    if (localStorage.length === 0) {
-      alert("❌ LocalStorage मा हाल कुनै डेटा छैन!");
-      return;
+ document.getElementById('backupBtn').addEventListener('click', async () => {
+  if (localStorage.length === 0) {
+    alert("❌ LocalStorage मा हाल कुनै डेटा छैन!");
+    return;
+  }
+
+  const allData = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    allData[key] = localStorage.getItem(key);
+  }
+
+  // 🔁 Instead of downloading multiple files, update GitHub only
+  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
+  const fileHandle = await window.showSaveFilePicker({
+    suggestedName: "Backup.json",
+    types: [{
+      description: "JSON Backup File",
+      accept: { "application/json": [".json"] }
+    }]
+  }).catch(() => null);
+
+  if (fileHandle) {
+    const writable = await fileHandle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+    alert("✅ Backup.json file updated successfully (overwritten).");
+  }
+
+  // --- also update GitHub (overwrite same file) ---
+  try {
+    const result = await backupToGitHub(allData);
+    if (result.ok) {
+      alert('✅ GitHub मा Backup.json सफलतापूर्वक अपडेट भयो!');
+    } else {
+      console.warn(result.message);
+      alert('⚠️ GitHub sync skipped/failed (see console).');
     }
+  } catch (e) {
+    console.warn('GitHub upload error', e);
+    alert('⚠️ GitHub sync failed (see console).');
+  }
+});
 
-    const allData = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      allData[key] = localStorage.getItem(key);
-    }
-
-    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = "backup_" + new Date().toISOString().split('T')[0] + ".json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    alert("✅ Backup file downloaded successfully!");
-  });
 
   // --- Restore: Select and load JSON file into localStorage ---
   document.getElementById('restoreBtn').addEventListener('click', () => {
