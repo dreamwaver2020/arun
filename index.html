@@ -504,7 +504,7 @@ import { initFirebase, loadKey, saveKey, subscribeKey } from './firebase-sync.js
     const writable = await fileHandle.createWritable();
     await writable.write(blob);
     await writable.close();
-    alert("✅ Backup.json file updated successfully (overwritten).");
+    alert("✅Dear, Arun Backup.json file updated successfully (overwritten).");
   }
 
   // --- also update GitHub (overwrite same file) ---
@@ -541,7 +541,7 @@ import { initFirebase, loadKey, saveKey, subscribeKey } from './firebase-sync.js
         for (const key in data) {
           localStorage.setItem(key, data[key]);
         }
-        alert("✅ Data restored successfully! कृपया पेज Refresh गर्नुहोस्।");
+        alert("✅Dear, Arun Data restored successfully! कृपया पेज Refresh गर्नुहोस्।");
       } catch (err) {
         alert("❌ Restore failed: " + err.message);
       }
