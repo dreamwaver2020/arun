@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bank Statement Manager — Final (Radio + Amount Below)</title>
+  <title>Bank Statement Manager — Final (Recent Date + Pagination)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .fade-in { animation: fadeIn 220ms ease; }
@@ -43,7 +43,6 @@
             <div class="text-xs text-gray-400 mt-1">Auto from previous closing</div>
           </div>
 
-          <!-- Txn Type with Amount below -->
           <div class="md:col-span-2">
             <label class="block text-xs text-gray-600">Today's Transaction</label>
             <div class="mt-1 flex items-center gap-4 border rounded p-2">
@@ -57,8 +56,7 @@
               </label>
             </div>
             <div class="mt-3">
-            
-              <input id="amountInput" type="number" placeholder="Enter amount    " step="0.01" class="mt-1 w-full p-2 border rounded text-right mono" />
+              <input id="amountInput" type="number" placeholder="Enter amount" step="0.01" class="mt-1 w-full p-2 border rounded text-right mono" />
             </div>
           </div>
 
@@ -71,7 +69,6 @@
               <button id="addBtn" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Add Transaction</button>
               <button id="clearBtn" type="button" class="px-4 py-2 border rounded">Clear</button>
               <button id="exportBtn" type="button" class="px-4 py-2 border rounded">Export CSV</button>
-              <button id="text" type="button" class="px-4 py-2 border rounded text-red-600">🟢</button>
             </div>
           </div>
         </form>
@@ -128,19 +125,19 @@
   const closingView = document.getElementById('closingView');
   const addBtn = document.getElementById('addBtn');
   const clearBtn = document.getElementById('clearBtn');
-  const resetBtn = document.getElementById('resetBtn');
   const exportBtn = document.getElementById('exportBtn');
   const summaryBody = document.getElementById('summaryBody');
   const searchInput = document.getElementById('searchInput');
   const countBadge = document.getElementById('countBadge');
   const toast = document.getElementById('toast');
 
-  // Radio type select
   let typeSelect = { value: 'receipt' };
   document.getElementById('receiptRadio').addEventListener('change', () => typeSelect.value = 'receipt');
   document.getElementById('paymentRadio').addEventListener('change', () => typeSelect.value = 'payment');
 
   let summaries = [];
+  let currentPage = 1;
+  const recordsPerPage = 10;
 
   function showToast(msg, ms=2000){
     toast.textContent = msg;
@@ -215,16 +212,28 @@
     closingView.textContent = formatMoney(currentClosing);
   }
 
-  function render(filter=''){
-    const ft = (filter||'').toLowerCase();
-    const list = summaries.slice().sort((a,b)=> a.bank.localeCompare(b.bank) || b.date.localeCompare(a.date));
+  // ✅ Render with DESCENDING DATE ORDER
+  function render(filter = '') {
+    const ft = (filter || '').toLowerCase();
+    const list = summaries.slice().sort((a,b)=> {
+      if (a.date !== b.date) return b.date.localeCompare(a.date); // recent first
+      if (a.bank !== b.bank) return a.bank.localeCompare(b.bank);
+      return (a.createdAt || '').localeCompare(b.createdAt || '');
+    });
     const filtered = list.filter(s => (s.bank+' '+s.date).toLowerCase().includes(ft));
-    if(!filtered.length){
+
+    const totalPages = Math.ceil(filtered.length / recordsPerPage);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const pageItems = filtered.slice(startIndex, startIndex + recordsPerPage);
+
+    if (!filtered.length) {
       summaryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500">No transactions yet.</td></tr>';
       return;
     }
-    summaryBody.innerHTML = filtered.map(s => {
-      return `<tr class="border-b">
+
+    summaryBody.innerHTML = pageItems.map(s => `
+      <tr class="border-b">
         <td class="p-3">${s.bank}</td>
         <td class="p-3">${s.date}</td>
         <td class="p-3 text-right mono">${formatMoney(s.opening)}</td>
@@ -240,29 +249,41 @@
             ${s.details.map(d=>`<li class="mono">${d.time} — ${d.type.toUpperCase()} ${formatMoney(d.amount)} <button class="delTxn ml-2 text-red-600" data-bank="${s.bank}" data-date="${s.date}" data-id="${d.id}">Delete</button></li>`).join('') || '<li class="text-gray-500">No details</li>'}
           </ul>
         </td>
+      </tr>`).join('');
+
+    const paginationHTML = `
+      <tr>
+        <td colspan="7" class="p-3 text-center">
+          <button id="prevPage" class="px-3 py-1 border rounded mr-2" ${currentPage===1?'disabled':''}>Prev</button>
+          <span class="text-sm text-gray-600">Page ${currentPage} of ${totalPages}</span>
+          <button id="nextPage" class="px-3 py-1 border rounded ml-2" ${currentPage===totalPages?'disabled':''}>Next</button>
+        </td>
       </tr>`;
-    }).join('');
+    summaryBody.innerHTML += paginationHTML;
+
+    document.getElementById('prevPage')?.addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; render(filter); }});
+    document.getElementById('nextPage')?.addEventListener('click', ()=>{ if(currentPage<totalPages){ currentPage++; render(filter); }});
+
     Array.from(document.getElementsByClassName('viewBtn')).forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        const bank = e.currentTarget.dataset.bank;
-        const date = e.currentTarget.dataset.date;
-        const el = document.getElementById(`details-${bank}-${date}`);
-        if(!el) return;
+      btn.addEventListener('click',(e)=>{
+        const bank=e.currentTarget.dataset.bank;
+        const date=e.currentTarget.dataset.date;
+        const el=document.getElementById(`details-${bank}-${date}`);
+        if(!el)return;
         el.classList.toggle('hidden');
       });
     });
+
     Array.from(document.getElementsByClassName('delTxn')).forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        const bank = e.currentTarget.dataset.bank;
-        const date = e.currentTarget.dataset.date;
-        const id = e.currentTarget.dataset.id;
-        if(!confirm('Delete this transaction?')) return;
-        const s = findSummary(bank,date);
-        if(!s) return;
-        s.details = s.details.filter(d=>d.id !== id);
-        if(s.details.length===0){
-          summaries = summaries.filter(x=>!(x.bank===bank && x.date===date));
-        }
+      btn.addEventListener('click',(e)=>{
+        const bank=e.currentTarget.dataset.bank;
+        const date=e.currentTarget.dataset.date;
+        const id=e.currentTarget.dataset.id;
+        if(!confirm('Delete this transaction?'))return;
+        const s=findSummary(bank,date);
+        if(!s)return;
+        s.details=s.details.filter(d=>d.id!==id);
+        if(s.details.length===0){ summaries=summaries.filter(x=>!(x.bank===bank&&x.date===date)); }
         recomputeBank(bank);
         save();
         render(searchInput.value.trim());
@@ -317,7 +338,7 @@
   function exportCSV(){
     const rows = [];
     rows.push(['Bank','Date','Opening','TotalReceipt','TotalPayment','Closing']);
-    for(const s of summaries.sort((a,b)=>a.bank.localeCompare(b.bank) || a.date.localeCompare(b.date))){
+    for(const s of summaries.sort((a,b)=>b.date.localeCompare(a.date))){
       rows.push([s.bank,s.date,s.opening,s.totalReceipt,s.totalPayment,s.closing]);
     }
     rows.push([]);
@@ -335,16 +356,6 @@
     setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
   }
 
-  function resetAll(){
-    if(!confirm('Reset all data? This cannot be undone.')) return;
-    summaries = [];
-    save();
-    render();
-    openingInput.value = 0;
-    closingView.textContent = '0.00';
-    showToast('All data reset');
-  }
-
   function init(){
     dateInput.value = todayISO();
     load();
@@ -353,20 +364,13 @@
     updatePreview();
     render();
 
-    bankSelect.addEventListener('change', ()=>{
-      openingInput.value = getLastClosingValue(bankSelect.value, dateInput.value);
-      updatePreview();
-    });
-    dateInput.addEventListener('change', ()=>{
-      openingInput.value = getLastClosingValue(bankSelect.value, dateInput.value);
-      updatePreview();
-    });
+    bankSelect.addEventListener('change', ()=>{ openingInput.value = getLastClosingValue(bankSelect.value, dateInput.value); updatePreview(); });
+    dateInput.addEventListener('change', ()=>{ openingInput.value = getLastClosingValue(bankSelect.value, dateInput.value); updatePreview(); });
     amountInput.addEventListener('input', ()=> updatePreview());
     document.getElementById('receiptRadio').addEventListener('change', ()=> updatePreview());
     document.getElementById('paymentRadio').addEventListener('change', ()=> updatePreview());
     addBtn.addEventListener('click', addTransaction);
     clearBtn.addEventListener('click', (e)=>{ e.preventDefault(); amountInput.value=''; updatePreview(); });
-    resetBtn.addEventListener('click', resetAll);
     exportBtn.addEventListener('click', exportCSV);
     searchInput.addEventListener('input', e=> render(e.target.value.trim()));
   }
