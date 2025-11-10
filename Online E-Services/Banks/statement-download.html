@@ -10,13 +10,15 @@
   <style>
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; }
     .hidden-row { display:none; }
+    .pagination-btn { padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; margin: 0 3px; }
+    .pagination-btn.active { background-color: #0284c7; color: white; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen antialiased">
   <div class="max-w-6xl mx-auto p-6">
     <header class="mb-6">
       <h1 class="text-2xl font-bold text-sky-700">𝓑𝓪𝓷𝓴 𝓢𝓽𝓪𝓽𝓮𝓶𝓮𝓷𝓽</h1>
-      <p class="text-sm text-gray-600">𝐂𝐥𝐢𝐜𝐤 "𝐕𝐢𝐞𝐰" 𝐭𝐨 𝐬𝐞𝐞 𝐝𝐞𝐭𝐚𝐢𝐥𝐞𝐝 𝐭𝐫𝐚𝐧𝐬𝐚𝐜𝐭𝐢𝐨𝐧𝐬. <span id="storageKey" class="mono"></span>)</p>
+      <p class="text-sm text-gray-600">𝐂𝐥𝐢𝐜𝐤 "𝐕𝐢𝐞𝐰" 𝐭𝐨 𝐬𝐞𝐞 𝐝𝐞𝐭𝐚𝐢𝐥𝐞𝐝 𝐭𝐫𝐚𝐧𝐬𝐚𝐜𝐭𝐢𝐨𝐧𝐬. (<span id="storageKey" class="mono"></span>)</p>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -51,6 +53,7 @@
           </table>
         </div>
 
+        <div class="flex justify-center mt-4" id="pagination"></div>
       </main>
 
       <aside class="bg-white p-6 rounded-2xl shadow">
@@ -98,14 +101,20 @@
   const bankFilter = document.getElementById('bankFilter');
   const exportAllBtn = document.getElementById('exportAllBtn');
   const savePdfBtn = document.getElementById('savePdfBtn');
+  const pagination = document.getElementById('pagination');
 
   let summaries = [];
   let quickType = '';
+  let currentPage = 1;
+  const recordsPerPage = 10;
 
   function load(){
     const raw = localStorage.getItem(STORAGE_KEY);
     summaries = raw ? JSON.parse(raw) : [];
-    summaries.sort((a,b)=> a.bank.localeCompare(b.bank) || a.date.localeCompare(b.date));
+
+    // sort by date descending (recent first)
+    summaries.sort((a,b)=> new Date(b.date) - new Date(a.date) || a.bank.localeCompare(b.bank));
+
     populateBankFilter();
     render();
   }
@@ -122,6 +131,7 @@
   function render(){
     const q = (globalSearch.value||'').toLowerCase().trim();
     const bankVal = bankFilter.value;
+
     let visible = summaries.filter(s=>{
       if(bankVal && s.bank !== bankVal) return false;
       if(quickType){
@@ -138,19 +148,27 @@
       return false;
     });
 
-    if(!visible.length){
+    // descending order already applied
+    const totalPages = Math.ceil(visible.length / recordsPerPage);
+    if (currentPage > totalPages) currentPage = 1;
+    const start = (currentPage - 1) * recordsPerPage;
+    const end = start + recordsPerPage;
+    const pageData = visible.slice(start, end);
+
+    if(!pageData.length){
       rowsBody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">No records found.</td></tr>';
       rowsCount.textContent = 0;
       sumReceiptEl.textContent = '0.00';
       sumPaymentEl.textContent = '0.00';
       netTotalEl.textContent = '0.00';
+      pagination.innerHTML = '';
       return;
     }
 
     let html = '';
-    let idx = 0;
     let totalReceipt = 0, totalPayment=0, net=0;
-    for(const s of visible){
+    let idx = start;
+    for(const s of pageData){
       idx++;
       totalReceipt += Number(s.totalReceipt||0);
       totalPayment += Number(s.totalPayment||0);
@@ -164,12 +182,8 @@
         <td class="p-2 text-right mono">${formatMoney(s.totalReceipt)}</td>
         <td class="p-2 text-right mono">${formatMoney(s.totalPayment)}</td>
         <td class="p-2 text-right mono">${formatMoney(s.closing)}</td>
-        <td class="p-2 align-top">
-          <button class="viewTxnsBtn px-2 py-1 border rounded" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}">View (${(s.details||[]).length})</button>
-        </td>
-        <td class="p-2 align-top">
-          <button class="exportRowBtn px-2 py-1 border rounded" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}">✔️</button>
-          </td>
+        <td class="p-2 align-top"><button class="viewTxnsBtn px-2 py-1 border rounded" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}">View (${(s.details||[]).length})</button></td>
+        <td class="p-2 align-top"><button class="exportRowBtn px-2 py-1 border rounded" data-bank="${escapeHtml(s.bank)}" data-date="${s.date}">✔️</button></td>
       </tr>
       <tr class="hidden-row" id="details-${escapeForId(s.bank)}-${s.date}">
         <td colspan="9" class="p-3 bg-gray-50">
@@ -190,21 +204,13 @@
     sumPaymentEl.textContent = formatMoney(totalPayment);
     netTotalEl.textContent = formatMoney(net);
 
-    // all event bindings (same as original)
+    renderPagination(totalPages);
+
     document.querySelectorAll('.viewTxnsBtn').forEach(btn=>{
       btn.onclick=e=>{
         const bank=e.currentTarget.dataset.bank, date=e.currentTarget.dataset.date;
         const el=document.getElementById(`details-${escapeForId(bank)}-${date}`);
         el.style.display=(el.style.display==='table-row')?'none':'table-row';
-      };
-    });
-
-    document.querySelectorAll('.delDayBtn').forEach(btn=>{
-      btn.onclick=e=>{
-        const bank=e.currentTarget.dataset.bank, date=e.currentTarget.dataset.date;
-        if(!confirm(`Delete all transactions for ${bank} on ${date}?`))return;
-        summaries=summaries.filter(s=>!(s.bank===bank&&s.date===date));
-        save();
       };
     });
 
@@ -239,6 +245,22 @@
     });
   }
 
+  function renderPagination(totalPages){
+    if(totalPages <= 1){ pagination.innerHTML = ''; return; }
+    let html = '';
+    html += `<button class="pagination-btn" ${currentPage===1?'disabled':''} onclick="changePage(${currentPage-1})">Prev</button>`;
+    for(let i=1;i<=totalPages;i++){
+      html += `<button class="pagination-btn ${i===currentPage?'active':''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    html += `<button class="pagination-btn" ${currentPage===totalPages?'disabled':''} onclick="changePage(${currentPage+1})">Next</button>`;
+    pagination.innerHTML = html;
+  }
+
+  window.changePage = function(page){
+    currentPage = page;
+    render();
+  };
+
   function downloadCSV(rows,filename){
     const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'});
@@ -252,7 +274,8 @@
     load();
   }
 
-  globalSearch.oninput=render; bankFilter.onchange=render;
+  globalSearch.oninput=render;
+  bankFilter.onchange=render;
   document.querySelectorAll('.quickFilterBtn').forEach(b=>b.onclick=e=>{quickType=e.target.dataset.val;render();});
   exportAllBtn.onclick=()=>{
     const rows=[['Bank','Date','Opening','Receipt','Payment','Closing']];
@@ -265,11 +288,7 @@
     const pdf = new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
     pdf.text('All Bank Records',40,30);
     const tableData = summaries.map(s=>[s.bank,s.date,s.opening,s.totalReceipt,s.totalPayment,s.closing]);
-    pdf.autoTable({
-      head:[['Bank','Date','Opening','Receipt','Payment','Closing']],
-      body:tableData,
-      startY:50
-    });
+    pdf.autoTable({ head:[['Bank','Date','Opening','Receipt','Payment','Closing']], body:tableData, startY:50 });
     pdf.save('bank_records.pdf');
   };
 
