@@ -25,7 +25,6 @@ body {
 
 h2 { text-align: center; color: var(--primary); font-size: 1.4rem; margin: 10px 5px 0 5px; }
 
-/* Date Picker Style */
 .date-selector {
     display: inline-block; padding: 8px 12px; background: #fffde7;
     border: 2px solid var(--accent); border-radius: 8px; margin-right: 10px;
@@ -145,7 +144,6 @@ const collectors = ["Anita Dahal","Bimala Khatri","Durga Neupane","Ganga Basnet"
 const denoms = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
 
 window.onload = () => {
-    // आजको मिति सेट गर्ने
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('transDate').value = today;
     
@@ -157,21 +155,16 @@ window.onload = () => {
 function loadTableByDate() {
     const selectedDate = document.getElementById('transDate').value;
     const history = JSON.parse(localStorage.getItem('mainDataArray')) || [];
-    
-    // छानिएको मितिको डाटा फिल्टर गर्ने
-    const dailyData = history.filter(item => item.date === selectedDate);
     const tbody = document.getElementById("collectorBody");
     tbody.innerHTML = "";
     
-    if (dailyData.length > 0) {
-        dailyData.forEach(item => {
-            tbody.appendChild(createRow(item.name, item.values));
-        });
-    } else {
-        collectors.forEach(name => {
-            tbody.appendChild(createRow(name, ["","","","","",""]));
-        });
-    }
+    // सधैं फिक्स्ड कलेक्टर लिस्ट देखाउने
+    collectors.forEach(name => {
+        // यो मितिको लागि यो कलेक्टरको डाटा छ कि छैन खोज्ने
+        const existingData = history.find(item => item.date === selectedDate && item.name === name);
+        const values = existingData ? existingData.values : ["","","","","",""];
+        tbody.appendChild(createRow(name, values));
+    });
 }
 
 function createRow(name, data = ["","","","","",""]) {
@@ -196,7 +189,7 @@ function createRow(name, data = ["","","","","",""]) {
 }
 
 function handleInput(el) {
-    if (el.value != 0) el.classList.add('has-value'); else el.classList.remove('has-value');
+    if (el.value != 0 && el.value !== "") el.classList.add('has-value'); else el.classList.remove('has-value');
     calcRow(el.closest('tr'));
 }
 
@@ -221,15 +214,14 @@ function manualSave() {
     const selectedDate = document.getElementById('transDate').value;
     let history = JSON.parse(localStorage.getItem('mainDataArray')) || [];
     
-    // पुरानो डाटा हटाउने (Overwriting current date data)
+    // वर्तमान मितिको पुरानो डाटा हटाउने र नयाँ सेभ गर्ने
     history = history.filter(item => item.date !== selectedDate);
 
     document.querySelectorAll('#collectorBody tr').forEach(tr => {
         const name = tr.dataset.name;
         const values = Array.from(tr.querySelectorAll('input')).map(i => i.value);
-        if(values.some(v => v !== "" && v !== "0")) {
-            history.push({ name: name, values: values, date: selectedDate });
-        }
+        // सबै डाटा सेभ गर्ने (खाली भए पनि) ताकि संरचना नबिग्रियोस्
+        history.push({ name: name, values: values, date: selectedDate });
     });
 
     localStorage.setItem('mainDataArray', JSON.stringify(history));
@@ -237,10 +229,10 @@ function manualSave() {
     
     const btn = document.getElementById('saveBtn');
     btn.innerText = "✅ Saved for " + selectedDate;
-    setTimeout(() => btn.innerText = "💾 Save All Data", 1500);
+    setTimeout(() => btn.innerText = "💾 Save Data (Selected Date)", 1500);
 }
 
-// --- NOTES & CASH CALC (OLD FUNCTIONS) ---
+// --- NOTES & CASH CALC ---
 function addNoteRow(date = "", part = "", amt = "", isLocked = false) {
     const tbody = document.getElementById("notesBody");
     const tr = document.createElement("tr");
@@ -313,16 +305,17 @@ function resetAll() {
     if(confirm("Confirm: Clear all data and start over?")) { localStorage.clear(); location.reload(); }
 }
 function exportCSV() {
-    let csv = "Collector,Saving,Loan,Total,NCBL,ESEWA,CASH,KHATA,Rec,Diff\n";
+    let csv = "Date,Collector,Saving,Loan,Total,NCBL,ESEWA,CASH,KHATA,Rec,Diff\n";
+    const date = document.getElementById('transDate').value;
     document.querySelectorAll('#collectorBody tr').forEach(tr => {
-        const cells = [tr.dataset.name];
+        const cells = [date, tr.dataset.name];
         tr.querySelectorAll('input').forEach(i => cells.push(i.value || 0));
         csv += cells.join(",") + "\n";
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Report_${document.getElementById('transDate').value}.csv`;
+    link.download = `Report_${date}.csv`;
     link.click();
 }
 function addNewRow(btn, name) {
