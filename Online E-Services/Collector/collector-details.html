@@ -1,388 +1,335 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐨𝐫 𝐃𝐚𝐭𝐚 𝐄𝐧𝐭𝐫𝐲</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collector Management Dashboard</title>
+
 <style>
-  body {font-family: 'Segoe UI', Arial, sans-serif; background: #e0f7fa; margin: 0; padding: 10px;}
-  h1 {text-align: center; color: #00796b; margin-bottom: 10px;}
-  .table-container {overflow-x: auto; margin-bottom: 12px;}
-  table {width: 100%; border-collapse: collapse; font-size: 0.9em;}
-  th, td {border: 1px solid #b2dfdb; padding: 5px; text-align: center;}
-  th {background-color: #004d40; color: white;}
-  input {width: 80px; text-align: right;}
-  .green {background-color: #c8e6c9;}
-  .pink {background-color: #f8bbd0;}
-  .btn {padding: 8px 15px; background: #00796b; color: white; border: none; cursor: pointer; border-radius: 4px; margin: 5px 2px;}
-  .btn:hover {background: #004d40;}
-  #summarySection {background: white; padding: 10px; border-radius: 6px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);} 
-  #summarySection h2 {color: #003e36; font-size: 1.1em; margin-bottom: 10px;}
-  .wrap{max-width: 930px;margin: 0 auto 18px;border: 3px solid #bfbfbf;background: linear-gradient(#f8fbff,#f1fbff);}
-  .topbar{background: #cfcfcf;padding: 10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #d9d9d9;}
-  .title{font-weight:700;font-size:20px;color:#2b4a54;}
-  .container{display:flex;gap:12px;padding:12px;}
-  .left {width: 62%;background: #fff;padding: 10px;border-radius:4px;box-shadow: 0 1px 2px rgba(0,0,0,0.06);} 
-  table.denom{width:100%;border-collapse:collapse;table-layout:fixed;}
-  table.denom th, table.denom td{border:1px solid #bfcbd4;padding:8px 6px;text-align:left;vertical-align:middle;}
-  table.denom thead th{background: #d7e7ee;color: #052033;font-weight:700;text-align:left;padding:10px;}
-  .denom-label{width:18%;font-weight:700;color:#013a4a;}
-  .count-cell input{width:100%;box-sizing:border-box;padding:6px;text-align:right;font-weight:700;border:1px solid #c7d7df;border-radius:4px;background: #fafcff;}
-  .row-total{text-align:right;font-weight:800;color:#0b3954;font-size:14px;}
-  .right {width:36%;padding:8px;background: linear-gradient(#eefcf3,#dff8ef);border-radius:4px;box-shadow: 0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;gap:8px;}
-  .grand {background:#fff;border:2px solid #98e6b6;padding:10px;text-align:center;border-radius:6px;}
-  .grand .label{font-size:14px;font-weight:700;color:#013a4a;}
-  .grand .amount{font-size:46px;font-weight:900;color:#05394a;margin-top:6px;letter-spacing:1px;}
-  .small-panel{background:#e9f7ef;padding:8px;border-radius:6px;border:1px solid #cde9d5;font-size:14px;}
-  .depositor{background:#fff;border:1px solid #cedeea;padding:8px;border-radius:6px;}
-  .depositor label{display:block;font-size:12px;color:#18424a;margin-top:6px;}
-  .depositor input{width:100%;padding:6px;box-sizing:border-box;font-weight:700;border:1px solid #d7e7ec;border-radius:4px;}
-  .in-words{margin-top:6px;background:#fff4f0;border-top:6px solid #d9534f;padding:10px;text-align:center;font-weight:700;color:#4a2c2c;border-radius:4px;font-size:15px;}
-  .controls{display:flex;gap:8px;margin-top:6px;}
-  button.btn-denom{padding:8px 12px;border:none;background:#0b3954;color:white;font-weight:700;border-radius:4px;cursor:pointer;}
-  button.btn-denom.secondary{background:#3c6e71;}
-  footer.note{padding:8px 12px;text-align:center;font-size:13px;color:#333;border-top:1px dashed #eee;margin-top:8px;}
-  .notes-wrap{margin-top:18px;background:#fff;padding:10px;border-radius:6px;border:1px solid #d6ebea;}
-  .notes-header{display:flex;justify-content:space-between;align-items:center;}
-  .notes-title{font-weight:800;color:#073b3b}
-  .notes-body{margin-top:10px;display:none}
-  .notes-body textarea{width:100%;min-height:120px;box-sizing:border-box;padding:8px;border:1px solid #d7e7e7;border-radius:6px;font-weight:700}
-  @media (max-width:880px){.container{flex-direction:column;}.left,.right{width:100%}.grand .amount{font-size:34px}}
-  @media print{#toggleDenomBtn,#savePdfBtn,#toggleNotesBtn,.btn,.btn-denom,#btnCSVDenom{display:none!important}#denominationSection{display:block!important}.notes-body{display:block!important}}
+:root {
+    --primary: #305496;
+    --secondary: #004d40;
+    --accent: #ffca28;
+    --bg: #f0f2f5;
+    --white: #ffffff;
+    --border-dark: #777;
+    --save-green: #2e7d32;
+    --edit-blue: #0277bd;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: #333; margin: 0; padding: 10px; font-size: 13px;
+}
+
+h2 { text-align: center; color: var(--primary); font-size: 1.4rem; margin: 10px 5px 0 5px; }
+
+/* Date Picker Style */
+.date-selector {
+    display: inline-block; padding: 8px 12px; background: #fffde7;
+    border: 2px solid var(--accent); border-radius: 8px; margin-right: 10px;
+}
+
+.toolbar { 
+    text-align: center; margin-bottom: 20px; padding: 15px; 
+    background: var(--white); border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.btn {
+    padding: 7px 15px; margin: 3px; border: none;
+    background: var(--primary); color: white;
+    font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.save-btn { background: var(--save-green) !important; font-size: 13px !important; border: 1px solid #1b5e20 !important; }
+.add-btn { background: #2e7d32; color: white; border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-weight: bold; }
+
+.action-btn { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 11px; margin: 0 2px; }
+.btn-edit { background: var(--edit-blue); }
+.btn-save-note { background: var(--save-green); display: none; }
+.btn-del { background: #c62828; }
+
+.table-container { overflow-x: auto; background: var(--white); border-radius: 10px; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+table { border-collapse: collapse; width: 100%; min-width: 1000px; border: 2px solid var(--border-dark); }
+th { background: var(--primary); color: white; padding: 8px 4px; border: 1px solid var(--white); }
+td { border: 1px solid var(--border-dark); padding: 5px; text-align: center; }
+
+input { width: 85%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-size: 12px; }
+input:disabled { background: #f9f9f9; border: 1px solid transparent; color: #333; text-align: center; }
+input.has-value { background-color: #e3f2fd; border-color: #2196f3; font-weight: bold; }
+
+.total, .rec { background: #f1f8e9; font-weight: bold; color: #2e7d32; }
+.diff { background: #fff8e1; font-weight: bold; }
+.status { font-size: 11px; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+.approved { color: #2e7d32; background: #c8e6c9; }
+.pending { color: #c62828; background: #ffcdd2; }
+
+#denomSection, #notesSection {
+    background: var(--white); padding: 20px; border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 1000px; margin: 20px auto;
+}
+
+.total-card {
+    flex: 0.8; min-width: 300px; background: var(--secondary); color: var(--accent);
+    padding: 30px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--accent);
+}
+.grand-total-val { font-size: 50px; font-weight: 800; margin: 10px 0; color: #fff; }
+
+@media print { .toolbar, .add-btn, .action-btn { display: none; } }
 </style>
 </head>
+
 <body>
 
-<h1>𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐨𝐫 𝐃𝐚𝐭𝐚 𝐄𝐧𝐭𝐫𝐲</h1>
+<h2>Collector Management Dashboard</h2>
+
+<div class="toolbar">
+    <div class="date-selector">
+        <label style="font-weight:bold;">📅 Transaction Date: </label>
+        <input type="date" id="transDate" onchange="loadTableByDate()" style="border:none; background:transparent; font-weight:bold; cursor:pointer; width:auto;">
+    </div>
+
+    <button class="btn save-btn" id="saveBtn" onclick="manualSave()">💾 Save Data (Selected Date)</button>
+    <button class="btn" onclick="exportCSV()">📁 Export CSV</button>
+    <button class="btn" onclick="toggleView('denomSection')">💰 Cash Calc</button>
+    <button class="btn" onclick="toggleView('notesSection')">📝 Notes</button>
+    <button class="btn" onclick="window.print()">🖨️ Print PDF</button>
+    <button class="btn" onclick="resetAll()" style="background:#c62828">🔄 Reset All</button>
+</div>
 
 <div class="table-container">
-<table id="collectorTable">
-  <thead>
-    <tr>
-      <th>Particulars</th><th>Saving</th><th>Loans</th><th>Total</th><th>NCBL</th><th>ESEWA</th><th>CASH</th><th>KHATA</th><th>Total Received</th><th>Difference</th><th>Status</th>
-    </tr>
-  </thead>
-  <tbody id="collectorBody">
-    <tr><td>𝐀𝐧𝐢𝐭𝐚 𝐃𝐚𝐡𝐚𝐥	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐁𝐢𝐦𝐚𝐥𝐚 𝐊𝐡𝐚𝐭𝐫𝐢	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐃𝐮𝐫𝐠𝐚 𝐍𝐞𝐮𝐩𝐚𝐧𝐞	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐆𝐚𝐧𝐠𝐚 𝐁𝐚𝐬𝐧𝐞𝐭	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐆𝐢𝐭𝐚 𝐊𝐡𝐚𝐭𝐫𝐢	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐌𝐚𝐧𝐣𝐮 𝐏𝐮𝐫𝐢	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐒𝐮𝐬𝐡𝐢𝐥𝐚 𝐏𝐚𝐫𝐚𝐣𝐮𝐥𝐢	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-    <tr><td>𝐁𝐚𝐧𝐤 𝐃𝐞𝐩𝐨𝐬𝐢𝐭𝐬	</td><td><input class="saving" value="0"></td><td><input class="loan" value="0"></td><td class="total green">0</td><td><input class="ncbl" value="0"></td><td><input class="esewa" value="0"></td><td><input class="cash" value="0"></td><td><input class="khata" value="0"></td><td class="totalReceived green">0</td><td class="difference pink">0</td><td class="status pink">Pending</td></tr>
-  </tbody>
-</table>
-</div>
-
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;justify-content:center;">
-  <button class="btn" onclick="saveData()">💾 Save Approved</button>
-  <button class="btn" onclick="reUpdateData()">🔄 Re-Update</button>
-  <button class="btn" onclick="resetAll()">♻️ Reset All</button>
-  <button class="btn" onclick="toggleAutoSave()">⚙️ Auto Save: <span id="autoStatus">OFF</span></button>
-  <button class="btn" id="savePdfBtn" onclick="saveAsPDF()">📄 Save as PDF</button>
-</div>
-
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;justify-content:center;">
-  <button class="btn" id="toggleDenomBtn" onclick="toggleDenom()">💵 Show Cash Denomination</button>
-  <button class="btn" id="toggleNotesBtn" onclick="toggleNotes()">📝 Show Notes for Me</button>
-</div>
-
-<div class="wrap" id="denominationSection" style="display:none;">
-  <div class="topbar">
-    <div class="title">Cash Denomination Calculator</div>
-    <div style="font-weight:700;color:#083b4c">Total Amount</div>
-  </div>
-  <div class="container">
-    <div class="left">
-      <table class="denom" aria-label="Denomination table">
-        <thead><tr><th>Denomination</th><th style="width:24%;">Count</th><th style="width:32%;text-align:right;">Amount</th></tr></thead>
-        <tbody id="tbody-denom"></tbody>
-      </table>
-      <div style="display:flex;justify-content:space-between;margin-top:10px;align-items:center;">
-        <div style="font-weight:700;color:#114b53">Depositor Details</div>
-        <div style="font-weight:800;font-size:20px;color:#062f40" id="rightTotalSmall">0</div>
-      </div>
-    </div>
-    <div class="right">
-      <div class="grand">
-        <div class="label">Total Amount</div>
-        <div class="amount" id="grandTotal">0</div>
-      </div>
-      <div class="depositor">
-        <label>Nefscun Member ID</label><input id="memberId" value="3361">
-        <label>Account No</label><input id="accNo" value="30030001528">
-        <label>Esewa/Mobile No</label><input id="mobileNo" value="9804370723      9765379955">
-      </div>
-      <div class="small-panel">
-        <div style="display:flex;justify-content:space-between"><strong>Depositor</strong><strong id="depTotal">0</strong></div>
-        <div style="margin-top:6px;font-size:13px;color:#0b3a3f">You can edit counts on left to update totals automatically.</div>
-      </div>
-      <div class="in-words" id="amountWords">Rupees Zero Only</div>
-      <div class="controls">
-        <button class="btn-denom" id="btnResetDenom">Reset</button>
-        <button class="btn-denom secondary" id="btnPrintDenom">Print</button>
-        <button class="btn-denom" id="btnCSVDenom">Export CSV</button>
-      </div>
-    </div>
-  </div>
-  <footer class="note">💡 Cash Denomination total is now separate (manual CASH entry in collector table).</footer>
-</div>
-
-<div id="summarySection">
-  <h2>📋 Talpatti Summary (All Entries)</h2>
-  <div class="table-container">
-    <table id="summaryTable">
-      <thead><tr><th>#</th><th>Particulars</th><th>Total</th><th>Total Received</th><th>Difference</th><th>Status</th></tr></thead>
-      <tbody id="summaryBody"></tbody>
+    <table>
+        <thead>
+            <tr>
+                <th>+</th><th>Particulars</th><th>Saving</th><th>Loans</th><th>Total</th>
+                <th>NCBL</th><th>ESEWA</th><th>CASH</th><th>KHATA</th><th>Recvd</th><th>Diff</th><th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="collectorBody"></tbody>
     </table>
-  </div>
 </div>
 
-<!-- Notes Section -->
-<div class="notes-wrap">
-  <div class="notes-header">
-    <div class="notes-title">Notes for Me</div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn" onclick="clearNotes()">Clear Notes</button>
-      <button class="btn" onclick="saveNotes()">Save Notes</button>
+<div id="denomSection" style="display:none;">
+    <div style="display:flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+        <div id="denomRowsContainer" style="flex:1; min-width:280px;"></div>
+        <div class="total-card">
+            <h4>TOTAL CASH BALANCE</h4>
+            <div id="denomTotal" class="grand-total-val">0</div>
+        </div>
     </div>
-  </div>
-  <div class="notes-body" id="notesBody">
-    <textarea id="myNotes" placeholder="यहाँ आफ्ना नोटहरू लेख्नुहोस्..."></textarea>
-  </div>
+</div>
+
+<div id="notesSection" style="display:none;">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:10px;">
+        <h3 style="color:var(--primary); margin:0;">User Notes</h3>
+        <button class="btn" onclick="addNoteRow()" style="background:var(--save-green)">+ Add New Note</button>
+    </div>
+    <table style="min-width: 100%;">
+        <thead>
+            <tr style="background:#ddd;">
+                <th style="color:#333; width:150px;">Date</th>
+                <th style="color:#333;">Particulars</th>
+                <th style="color:#333; width:150px;">Amount</th>
+                <th style="color:#333; width:180px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="notesBody"></tbody>
+    </table>
 </div>
 
 <script>
-const STORAGE_COLLECTOR_KEY='collectorData_v_final';
-const STORAGE_DENOM_KEY='denominationData_v_final';
-const STORAGE_AUTOSAVE='autoSaveEnabled_v_final';
-const STORAGE_NOTES='collectorNotes_v_final';
-let autoSaveEnabled=false;
+const collectors = ["Anita Dahal","Bimala Khatri","Durga Neupane","Ganga Basnet","Gita Khatri","Manju Puri","Sushila Parajuli","Bank Deposits"];
+const denoms = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
 
-function parseNum(v){return isNaN(+v)?0:+v;}
+window.onload = () => {
+    // आजको मिति सेट गर्ने
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('transDate').value = today;
+    
+    loadTableByDate();
+    initDenoms();
+    loadNotes();
+};
 
-function updateRow(row){
-  const s=parseNum(row.querySelector('.saving').value);
-  const l=parseNum(row.querySelector('.loan').value);
-  const total=s+l;
-  row.querySelector('.total').textContent=total.toFixed(2);
-  const n=parseNum(row.querySelector('.ncbl').value);
-  const e=parseNum(row.querySelector('.esewa').value);
-  const c=parseNum(row.querySelector('.cash').value);
-  const k=parseNum(row.querySelector('.khata').value);
-  const rec=n+e+c+k;
-  row.querySelector('.totalReceived').textContent=rec.toFixed(2);
-  const diff=total-rec;
-  row.querySelector('.difference').textContent=diff.toFixed(2);
-  row.querySelector('.status').textContent=Math.abs(diff)<0.005?'Approved':'Pending';
-  renderSummary();
-  if(autoSaveEnabled)saveData();
-}
-
-function attachCollectorListeners(){
-  document.querySelectorAll('#collectorTable input').forEach(inp=>{
-    inp.addEventListener('input',()=>updateRow(inp.closest('tr')));
-  });
-}
-
-function renderSummary(){
-  const body=document.getElementById('summaryBody');
-  body.innerHTML='';
-  const rows=document.querySelectorAll('#collectorBody tr');
-  rows.forEach((r,i)=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${i+1}</td><td>${r.cells[0].textContent}</td><td>${r.querySelector('.total').textContent}</td><td>${r.querySelector('.totalReceived').textContent}</td><td>${r.querySelector('.difference').textContent}</td><td>${r.querySelector('.status').textContent}</td>`;
-    body.appendChild(tr);
-  });
-}
-
-function saveData(){
-  // --- Archive current collector snapshot into datewise history ---
-  try{
-    const today = new Date().toISOString().slice(0,10);
-    const existing = JSON.parse(localStorage.getItem('collectorHistory_v1')||'{}');
-    const collectors=[];
-    document.querySelectorAll('#collectorBody tr').forEach(r=>{
-      collectors.push({
-        name:r.cells[0].textContent,
-        saving:r.querySelector('.saving').value||0,
-        loan:r.querySelector('.loan').value||0,
-        ncbl:r.querySelector('.ncbl').value||0,
-        esewa:r.querySelector('.esewa').value||0,
-        cash:r.querySelector('.cash').value||0,
-        khata:r.querySelector('.khata').value||0,
-        total:r.querySelector('.total').textContent,
-        totalReceived:r.querySelector('.totalReceived').textContent,
-        difference:r.querySelector('.difference').textContent,
-        status:r.querySelector('.status').textContent
-      });
-    });
-    existing[today] = collectors; // overwrite for that date
-    localStorage.setItem('collectorHistory_v1', JSON.stringify(existing));
-  }catch(e){console.warn('History save failed',e)}
-
-  const collectors=[];
-  document.querySelectorAll('#collectorBody tr').forEach(r=>{
-    collectors.push({
-      name:r.cells[0].textContent,
-      saving:r.querySelector('.saving').value||0,
-      loan:r.querySelector('.loan').value||0,
-      ncbl:r.querySelector('.ncbl').value||0,
-      esewa:r.querySelector('.esewa').value||0,
-      cash:r.querySelector('.cash').value||0,
-      khata:r.querySelector('.khata').value||0,
-      total:r.querySelector('.total').textContent,
-      totalReceived:r.querySelector('.totalReceived').textContent,
-      difference:r.querySelector('.difference').textContent,
-      status:r.querySelector('.status').textContent
-    });
-  });
-  localStorage.setItem(STORAGE_COLLECTOR_KEY,JSON.stringify(collectors));
-  const denomCounts={};
-  document.querySelectorAll('.count').forEach(inp=>{
-    denomCounts[inp.dataset.denom]=parseInt(inp.value||0,10);
-  });
-  localStorage.setItem(STORAGE_DENOM_KEY,JSON.stringify(denomCounts));
-}
-
-function resetAll(){
-  if(!confirm('Reset all data?'))return;
-  document.querySelectorAll('input').forEach(i=>{
-    if(i.classList.contains('saving')||i.classList.contains('loan')||i.classList.contains('ncbl')||i.classList.contains('esewa')||i.classList.contains('cash')||i.classList.contains('khata')||i.classList.contains('count'))i.value=0;
-  });
-  document.querySelectorAll('.total,.totalReceived,.difference').forEach(e=>e.textContent='0');
-  document.querySelectorAll('.status').forEach(e=>e.textContent='Pending');
-  recomputeAllDenoms();
-  renderSummary();
-}
-
-function toggleAutoSave(){
-  autoSaveEnabled=!autoSaveEnabled;
-  document.getElementById('autoStatus').textContent=autoSaveEnabled?'ON':'OFF';
-  localStorage.setItem(STORAGE_AUTOSAVE,autoSaveEnabled?'true':'false');
-}
-
-const DENOMS=[1000,500,100,50,20,10,5];
-const tbodyDenom=document.getElementById('tbody-denom');
-function buildDenomRows(){
-  tbodyDenom.innerHTML='';
-  for(const d of DENOMS){
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td class="denom-label">${d} X</td><td class="count-cell"><input type="number" min="0" step="1" class="count" data-denom="${d}" value="0"></td><td class="row-total" id="amt-${d}">0</td>`;
-    tbodyDenom.appendChild(tr);
-  }
-}
-buildDenomRows();
-
-function recomputeAllDenoms(){
-  let grand=0;
-  document.querySelectorAll('.count').forEach(inp=>{
-    const denom=parseInt(inp.dataset.denom,10);
-    const cnt=Math.max(0,parseInt(inp.value||0,10));
-    const amt=denom*cnt;
-    const el=document.getElementById('amt-'+denom);
-    if(el)el.textContent=amt.toLocaleString('en-IN');
-    grand+=amt;
-  });
-  document.getElementById('grandTotal').textContent=grand.toLocaleString('en-IN');
-  document.getElementById('depTotal').textContent=grand.toLocaleString('en-IN');
-  document.getElementById('rightTotalSmall').textContent=grand.toLocaleString('en-IN');
-  document.getElementById('amountWords').textContent=numberToWordsIndian(grand);
-  if(autoSaveEnabled)saveData();
-}
-
-function numberToWordsIndian(num){
-  num=Math.floor(num);
-  if(num===0)return'Rupees Zero Only';
-  const u=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
-  const t=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
-  function two(n){if(n<20)return u[n];const T=Math.floor(n/10);const U=n%10;return t[T]+(U?" "+u[U]:"");}
-  function three(n){const h=Math.floor(n/100);const r=n%100;let s="";if(h)s+=u[h]+" Hundred";if(r){if(s)s+=" ";s+=two(r);}return s;}
-  let c=Math.floor(num/10000000);num%=10000000;let l=Math.floor(num/100000);num%=100000;let th=Math.floor(num/1000);num%=1000;const r=num;
-  const p=[];if(c)p.push(three(c)+" Crore");if(l)p.push(three(l)+" Lakh");if(th)p.push(three(th)+" Thousand");if(r)p.push(three(r));
-  return"Rupees "+p.join(" ")+" Only";
-}
-
-document.addEventListener('input',e=>{if(e.target.classList.contains('count'))recomputeAllDenoms();});
-document.getElementById('btnResetDenom').addEventListener('click',()=>{if(!confirm('Reset all counts?'))return;document.querySelectorAll('.count').forEach(i=>i.value=0);recomputeAllDenoms();});
-document.getElementById('btnPrintDenom').addEventListener('click',()=>window.print());
-document.getElementById('btnCSVDenom').addEventListener('click',()=>{
-  const rows=[['Denomination','Count','Amount']];
-  document.querySelectorAll('.count').forEach(i=>{const d=i.dataset.denom;const c=parseInt(i.value||0,10);rows.push([d,c,d*c]);});
-  rows.push(['Grand Total','',document.getElementById('grandTotal').textContent]);
-  const csv=rows.map(r=>r.map(cell=>`"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='denominations.csv';a.click();URL.revokeObjectURL(url);
-});
-
-function toggleDenom(){
-  const sec=document.getElementById('denominationSection');
-  const btn=document.getElementById('toggleDenomBtn');
-  if(sec.style.display==='block'){sec.style.display='none';btn.textContent='💵 Show Cash Denomination';}
-  else{sec.style.display='block';btn.textContent='💵 Hide Cash Denomination';}
-}
-
-function toggleNotes(){
-  const body=document.getElementById('notesBody');
-  const btn=document.getElementById('toggleNotesBtn');
-  if(body.style.display==='block'){body.style.display='none';btn.textContent='📝 Show Notes for Me';}
-  else{body.style.display='block';btn.textContent='📝 Hide Notes for Me';}
-}
-
-function saveNotes(){
-  const v=document.getElementById('myNotes').value||'';
-  localStorage.setItem(STORAGE_NOTES, v);
-  alert('Notes saved locally');
-}
-
-function clearNotes(){
-  if(!confirm('Clear notes?'))return;
-  document.getElementById('myNotes').value='';
-  localStorage.removeItem(STORAGE_NOTES);
-}
-
-function saveAsPDF(){
-  const denom=document.getElementById('denominationSection');
-  const notes=document.getElementById('notesBody');
-  const denomWasHidden=(denom.style.display!=='block');
-  const notesWasHidden=(notes.style.display!=='block');
-  denom.style.display='block';
-  notes.style.display='block';
-  setTimeout(()=>{
-    window.print();
-    if(denomWasHidden)denom.style.display='none';
-    if(notesWasHidden)notes.style.display='none';
-  },250);
-}
-
-function initFromStorage(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(STORAGE_COLLECTOR_KEY)||'[]');
-    if(saved.length){
-      const rows=document.querySelectorAll('#collectorBody tr');
-      saved.forEach((d,i)=>{if(rows[i]){rows[i].querySelector('.saving').value=d.saving||0;rows[i].querySelector('.loan').value=d.loan||0;rows[i].querySelector('.ncbl').value=d.ncbl||0;rows[i].querySelector('.esewa').value=d.esewa||0;rows[i].querySelector('.cash').value=d.cash||0;rows[i].querySelector('.khata').value=d.khata||0;}});
+function loadTableByDate() {
+    const selectedDate = document.getElementById('transDate').value;
+    const history = JSON.parse(localStorage.getItem('mainDataArray')) || [];
+    
+    // छानिएको मितिको डाटा फिल्टर गर्ने
+    const dailyData = history.filter(item => item.date === selectedDate);
+    const tbody = document.getElementById("collectorBody");
+    tbody.innerHTML = "";
+    
+    if (dailyData.length > 0) {
+        dailyData.forEach(item => {
+            tbody.appendChild(createRow(item.name, item.values));
+        });
+    } else {
+        collectors.forEach(name => {
+            tbody.appendChild(createRow(name, ["","","","","",""]));
+        });
     }
-    const savedDenom=JSON.parse(localStorage.getItem(STORAGE_DENOM_KEY)||'{}');
-    if(Object.keys(savedDenom).length){document.querySelectorAll('.count').forEach(inp=>{const d=inp.dataset.denom;if(savedDenom[d]!==undefined)inp.value=savedDenom[d];});}
-    if(localStorage.getItem(STORAGE_AUTOSAVE)==='true'){autoSaveEnabled=true;document.getElementById('autoStatus').textContent='ON';}
-    const notes=localStorage.getItem(STORAGE_NOTES)||'';document.getElementById('myNotes').value=notes;
-  }catch(e){console.warn('Could not parse saved data',e);}
-  recomputeAllDenoms();
-  attachCollectorListeners();
-  renderSummary();
 }
 
-window.onload=function(){attachCollectorListeners();buildDenomRows();initFromStorage();};
-
-function reUpdateData(){
-  document.querySelectorAll('#collectorBody tr').forEach(r=>{
-    updateRow(r); // recalculate all
-  });
-  saveData();
-  renderSummary();
-  alert('✅ All rows re-updated and saved successfully!');
+function createRow(name, data = ["","","","","",""]) {
+    const tr = document.createElement("tr");
+    tr.dataset.name = name;
+    tr.innerHTML = `
+        <td><button class="add-btn" onclick="addNewRow(this, '${name}')">+</button></td>
+        <td style="text-align:left; font-weight:600;">${name}</td>
+        <td><input type="number" value="${data[0]}" oninput="handleInput(this)"></td>
+        <td><input type="number" value="${data[1]}" oninput="handleInput(this)"></td>
+        <td class="total">0</td>
+        <td><input type="number" value="${data[2]}" oninput="handleInput(this)"></td>
+        <td><input type="number" value="${data[3]}" oninput="handleInput(this)"></td>
+        <td><input type="number" value="${data[4]}" oninput="handleInput(this)"></td>
+        <td><input type="number" value="${data[5]}" oninput="handleInput(this)"></td>
+        <td class="rec">0</td>
+        <td class="diff">0</td>
+        <td><span class="status pending">Pending</span></td>
+    `;
+    setTimeout(() => calcRow(tr), 10);
+    return tr;
 }
 
+function handleInput(el) {
+    if (el.value != 0) el.classList.add('has-value'); else el.classList.remove('has-value');
+    calcRow(el.closest('tr'));
+}
+
+function calcRow(r) {
+    const ins = r.querySelectorAll('input');
+    const v = (i) => parseFloat(ins[i].value) || 0;
+    const total = v(0) + v(1);
+    const rec = v(2) + v(3) + v(4) + v(5);
+    const diff = total - rec;
+    r.cells[4].innerText = total.toLocaleString();
+    r.cells[9].innerText = rec.toLocaleString();
+    r.cells[10].innerText = diff.toLocaleString();
+    const st = r.cells[11].querySelector('.status');
+    if (Math.abs(diff) < 0.01 && (total > 0 || rec > 0)) { 
+        st.innerText = "Approved"; st.className = "status approved"; 
+    } else { 
+        st.innerText = "Pending"; st.className = "status pending"; 
+    }
+}
+
+function manualSave() {
+    const selectedDate = document.getElementById('transDate').value;
+    let history = JSON.parse(localStorage.getItem('mainDataArray')) || [];
+    
+    // पुरानो डाटा हटाउने (Overwriting current date data)
+    history = history.filter(item => item.date !== selectedDate);
+
+    document.querySelectorAll('#collectorBody tr').forEach(tr => {
+        const name = tr.dataset.name;
+        const values = Array.from(tr.querySelectorAll('input')).map(i => i.value);
+        if(values.some(v => v !== "" && v !== "0")) {
+            history.push({ name: name, values: values, date: selectedDate });
+        }
+    });
+
+    localStorage.setItem('mainDataArray', JSON.stringify(history));
+    autoSaveNotes();
+    
+    const btn = document.getElementById('saveBtn');
+    btn.innerText = "✅ Saved for " + selectedDate;
+    setTimeout(() => btn.innerText = "💾 Save All Data", 1500);
+}
+
+// --- NOTES & CASH CALC (OLD FUNCTIONS) ---
+function addNoteRow(date = "", part = "", amt = "", isLocked = false) {
+    const tbody = document.getElementById("notesBody");
+    const tr = document.createElement("tr");
+    const today = date || new Date().toISOString().split('T')[0];
+    tr.innerHTML = `
+        <td><input type="date" value="${today}" ${isLocked ? 'disabled' : ''} style="text-align:center;"></td>
+        <td><input type="text" value="${part}" ${isLocked ? 'disabled' : ''} style="text-align:left;"></td>
+        <td><input type="number" value="${amt}" ${isLocked ? 'disabled' : ''}></td>
+        <td>
+            <button class="action-btn btn-edit" onclick="editNote(this)" style="display: ${isLocked ? 'inline-block' : 'none'}">Edit</button>
+            <button class="action-btn btn-save-note" onclick="saveNote(this)" style="display: ${isLocked ? 'none' : 'inline-block'}">Save</button>
+            <button class="action-btn btn-del" onclick="deleteNote(this)">Delete</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+function editNote(btn) {
+    const tr = btn.closest('tr');
+    tr.querySelectorAll('input').forEach(i => i.disabled = false);
+    btn.style.display = 'none';
+    tr.querySelector('.btn-save-note').style.display = 'inline-block';
+}
+function saveNote(btn) {
+    const tr = btn.closest('tr');
+    tr.querySelectorAll('input').forEach(i => i.disabled = true);
+    btn.style.display = 'none';
+    tr.querySelector('.btn-edit').style.display = 'inline-block';
+    autoSaveNotes();
+}
+function deleteNote(btn) {
+    if(confirm("Delete this note?")) { btn.closest('tr').remove(); autoSaveNotes(); }
+}
+function autoSaveNotes() {
+    const notes = [];
+    document.querySelectorAll('#notesBody tr').forEach(tr => {
+        const ins = tr.querySelectorAll('input');
+        notes.push({ date: ins[0].value, part: ins[1].value, amt: ins[2].value });
+    });
+    localStorage.setItem('notesData', JSON.stringify(notes));
+}
+function loadNotes() {
+    const savedNotes = JSON.parse(localStorage.getItem('notesData')) || [];
+    savedNotes.forEach(n => addNoteRow(n.date, n.part, n.amt, true));
+}
+function initDenoms() {
+    const container = document.getElementById("denomRowsContainer");
+    denoms.forEach(v => {
+        container.innerHTML += `
+        <div style="display:flex; align-items:center; border-bottom:1px solid #eee; padding:5px 0;">
+            <div style="width:50px; font-weight:bold;">${v}</div>
+            <input type="number" class="dn" data-v="${v}" oninput="calcDenom()" style="flex:1; margin:0 10px; text-align:center;">
+            <div id="sub${v}" style="width:80px; text-align:right;">0</div>
+        </div>`;
+    });
+}
+function calcDenom() {
+    let total = 0;
+    document.querySelectorAll('.dn').forEach(i => {
+        const amt = (i.dataset.v * i.value) || 0;
+        document.getElementById('sub' + i.dataset.v).innerText = amt.toLocaleString();
+        total += amt;
+    });
+    document.getElementById('denomTotal').innerText = total.toLocaleString();
+}
+function toggleView(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function resetAll() {
+    if(confirm("Confirm: Clear all data and start over?")) { localStorage.clear(); location.reload(); }
+}
+function exportCSV() {
+    let csv = "Collector,Saving,Loan,Total,NCBL,ESEWA,CASH,KHATA,Rec,Diff\n";
+    document.querySelectorAll('#collectorBody tr').forEach(tr => {
+        const cells = [tr.dataset.name];
+        tr.querySelectorAll('input').forEach(i => cells.push(i.value || 0));
+        csv += cells.join(",") + "\n";
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Report_${document.getElementById('transDate').value}.csv`;
+    link.click();
+}
+function addNewRow(btn, name) {
+    const row = btn.closest("tr");
+    const newRow = createRow(name);
+    row.parentNode.insertBefore(newRow, row.nextSibling);
+}
 </script>
 </body>
 </html>
