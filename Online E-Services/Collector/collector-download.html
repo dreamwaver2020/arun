@@ -1,199 +1,255 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ne">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Collector Download</title>
-<style>
-  body{font-family:Segoe UI,Arial;color:#123;background:#f7fbfc;padding:16px}
-  .card{max-width:1100px;margin:auto;background:#fff;padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(10,30,60,0.06)}
-  h1{color:#0f766e}
-  .controls{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-  select,input{padding:6px;border:1px solid #cbd5e1;border-radius:6px}
-  table{width:100%;border-collapse:collapse}
-  th,td{padding:8px;border:1px solid #e6eef6;text-align:left}
-  th{background:#e6fffa;color:#064e3b}
-  .right{text-align:right}
-  button{padding:8px 10px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
-  @media print{button{display:none}}
-</style>
+    <meta charset="UTF-8">
+    <title>Premium Collector Dashboard with Sound Notification</title>
+    <style>
+        :root { 
+            --primary: #1e3a8a; 
+            --secondary: #3b82f6;
+            --bg: #f0f4f8; 
+            --text-dark: #1e293b;
+            --text-light: #475569;
+            --success: #059669;
+        }
+
+        body { 
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            padding: 15px; background: var(--bg); 
+            color: var(--text-dark); font-size: 12px;
+        }
+
+        .container { max-width: 1400px; margin: auto; background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .title { color: var(--primary); font-size: 1.4rem; font-weight: 800; margin: 0; }
+
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .refresh-status { font-size: 10px; color: var(--text-light); font-style: italic; }
+
+        .filter-card {
+            background: #ffffff; border: 1px solid #e2e8f0; padding: 12px;
+            border-radius: 12px; display: flex; gap: 15px; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 25px;
+        }
+        .filter-card input { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 12px; outline: none; }
+
+        #statementList {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .date-card {
+            background: white; border-radius: 10px; padding: 12px; cursor: pointer; 
+            transition: 0.3s; position: relative; border: 1px solid #e2e8f0;
+            border-left: 6px solid #3b82f6;
+        }
+        .date-card:nth-child(even) { border-left-color: #10b981; }
+        .date-card:nth-child(3n) { border-left-color: #f59e0b; }
+
+        .date-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: #fafafa; }
+        .date-card h3 { margin: 0 0 6px 0; color: #334155; font-size: 14px; }
+        .summary-box { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-light); }
+
+        .modal {
+            display: none; position: fixed; z-index: 9999; 
+            left: 0; top: 0; width: 100%; height: 100%; 
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px);
+        }
+        .modal-content {
+            background: white; margin: 1% auto; padding: 25px;
+            width: 95%; height: 90vh; border-radius: 16px; overflow-y: auto;
+        }
+        .close-btn { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: #ef4444; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f8fafc; padding: 10px; text-align: right; border-bottom: 2px solid #e2e8f0; font-size: 11px; color: #64748b; }
+        td { padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right; font-size: 12px; }
+        .name-td { text-align: left; font-weight: 600; color: var(--primary); }
+        .total-row { background: #fdf2f2; font-weight: 800; }
+
+        .pagination { 
+            display: flex; justify-content: center; align-items: center; 
+            gap: 8px; margin-top: 30px; padding: 15px; border-top: 1px solid #e2e8f0;
+        }
+        .pg-btn { 
+            padding: 8px 16px; border: 1px solid #cbd5e1; background: white; 
+            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+            transition: 0.2s;
+        }
+        .pg-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pg-btn:hover:not(.active):not(:disabled) { background: #eef2ff; border-color: var(--primary); }
+
+        @media (max-width: 1000px) { #statementList { grid-template-columns: 1fr; } }
+        @media print { .no-print { display: none !important; } .modal { display: block; position: relative; } }
+    </style>
 </head>
 <body>
-<div class="card">
-  <h1>Collector Download (Datewise Archive)</h1>
-  <div class="controls">
-    <label>Date <input id="dateSel" type="date" /></label>
-    <button id="loadBtn">Load</button>
-    <button id="showAll">Show All Dates</button>
-    <div style="margin-left:auto;display:flex;gap:8px">
-      <button id="exportCSV">Export CSV</button>
-      <button id="exportXLS">Export Excel (.xls)</button>
-      <button id="exportPDF">Export PDF</button>
-      <button id="printBtn">Print</button>
+
+<div class="container">
+    <div class="header-flex no-print">
+        <h1 class="title">Collector Dashboard</h1>
+        <div class="btn-group">
+            <span id="lastRefreshed" class="refresh-status">Initializing...</span>
+            <button class="pg-btn" style="background:var(--secondary); color:white; border:none;" onclick="manualRefresh()">🔄 Refresh</button>
+            <button class="pg-btn" style="background:var(--success); color:white; border:none;" onclick="window.print()">🖨️ Print</button>
+        </div>
     </div>
-  </div>
 
-  <div id="info" class="small"></div>
+    <div class="filter-card no-print">
+        <input type="text" id="searchName" placeholder="खोज्नुहोस् (Name)..." onkeyup="resetAndRender()">
+        <input type="date" id="filterDate" onchange="resetAndRender()">
+    </div>
 
-  <div style="overflow:auto;max-height:540px">
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th>#</th><th>Particulars</th><th class="right">Saving</th>
-          <th class="right">Loan</th><th class="right">Total</th>
-          <th class="right">NCBL</th><th class="right">ESEWA</th>
-          <th class="right">CASH</th><th class="right">KHATA</th>
-          <th class="right">Total Received</th><th class="right">Difference</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+    <div id="statementList"></div>
+    <div id="pagination" class="pagination no-print"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<div id="dataModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="modalDate" style="color:var(--primary); margin:0;"></h2>
+        <div id="modalTableContainer"></div>
+    </div>
+</div>
+
 <script>
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem('collectorHistory_v1') || '{}'); }
-  catch(e) { return {}; }
-}
+    let currentPage = 1;
+    const recordsPerPage = 10; 
+    let lastDataCount = 0; // Data count track garna ko lagi
 
-function renderForDate(date) {
-  const history = loadHistory();
-  const tbody = document.querySelector('#tbl tbody');
-  tbody.innerHTML = '';
+    // Sound file setup
+    const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-  if (!history[date]) {
-    tbody.innerHTML = '<tr><td colspan=12 style="text-align:center;padding:18px;color:#666">No data for selected date.</td></tr>';
-    document.getElementById('info').textContent = '';
-    return [];
-  }
+    function format(n) { return (parseFloat(n) || 0).toLocaleString(undefined, {minimumFractionDigits: 2}); }
+    function closeModal() { document.getElementById('dataModal').style.display = "none"; }
+    function resetAndRender() { currentPage = 1; renderReport(); }
 
-  const seen = new Set();
-  const arr = history[date].filter(r => {
-    const key = r.name + r.saving + r.loan + r.total + r.totalReceived; 
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    function manualRefresh() {
+        renderReport(true); // Force sound on manual check if new
+    }
 
-  arr.forEach((r, i) => {
-    const { name, saving, loan, total, ncbl, esewa, cash, khata, totalReceived, difference, status } = r;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${name}</td>
-      <td class='right'>${saving}</td>
-      <td class='right'>${loan}</td>
-      <td class='right'>${total}</td>
-      <td class='right'>${ncbl}</td>
-      <td class='right'>${esewa}</td>
-      <td class='right'>${cash}</td>
-      <td class='right'>${khata}</td>
-      <td class='right'>${totalReceived}</td>
-      <td class='right'>${difference}</td>
-      <td>${status}</td>`;
-    tbody.appendChild(tr);
-  });
+    function updateTimestamp() {
+        const now = new Date();
+        document.getElementById('lastRefreshed').innerText = "Last sync: " + now.toLocaleTimeString();
+    }
 
-  document.getElementById('info').textContent = `Records for ${date}: ${arr.length}`;
-  return arr;
-}
+    function playNotification() {
+        notificationSound.play().catch(e => console.log("Sound play failed: User interaction required."));
+    }
 
-document.getElementById('loadBtn').addEventListener('click', () => {
-  const d = document.getElementById('dateSel').value;
-  if (!d) { alert('Please select a date'); return; }
-  renderForDate(d);
-});
+    function openFullData(date, historyForDate) {
+        const modal = document.getElementById('dataModal');
+        const container = document.getElementById('modalTableContainer');
+        document.getElementById('modalDate').innerText = `📅 मिति: ${date}`;
+        modal.style.display = "block";
 
-document.getElementById('showAll').addEventListener('click', () => {
-  const history = loadHistory();
-  const tbody = document.querySelector('#tbl tbody');
-  tbody.innerHTML = '';
-  const keys = Object.keys(history).sort((a, b) => b.localeCompare(a));
-  if (!keys.length) {
-    tbody.innerHTML = '<tr><td colspan=12 style="text-align:center;padding:18px;color:#666">No history saved yet.</td></tr>';
-    return;
-  }
-  let count = 0;
-  keys.forEach(date => {
-    const seen = new Set();
-    const arr = history[date].filter(r => {
-      const key = r.name + r.saving + r.loan + r.total + r.totalReceived;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+        let dS=0, dL=0, dT=0, dR=0;
+        let rows = "";
+        historyForDate.forEach(item => {
+            const v = item.values.map(x => parseFloat(x) || 0);
+            const target = v[0] + v[1];
+            const received = v[2] + v[3] + v[4] + v[5];
+            dS+=v[0]; dL+=v[1]; dT+=target; dR+=received;
+            rows += `<tr>
+                <td class="name-td">${item.name}</td>
+                <td>${format(v[0])}</td><td>${format(v[1])}</td><td>${format(target)}</td>
+                <td>${format(v[2])}</td><td>${format(v[3])}</td><td>${format(v[4])}</td><td>${format(v[5])}</td>
+                <td style="color:#059669; font-weight:bold;">${format(received)}</td>
+                <td style="color:${Math.abs(target-received)>0.1?'#ef4444':'#059669'}; font-weight:bold;">${format(target-received)}</td>
+            </tr>`;
+        });
 
-    arr.forEach(r => {
-      count++;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${count}</td>
-        <td>${r.name} <small style="color:#666">(${date})</small></td>
-        <td class="right">${r.total}</td>
-        <td class="right">${r.totalReceived}</td>
-        <td class="right">${r.difference}</td>
-        <td>${r.status}</td>`;
-      tbody.appendChild(tr);
-    });
-  });
-  document.getElementById('info').textContent = `Showing all dates — total rows: ${count}`;
-});
+        container.innerHTML = `<table>
+            <thead><tr><th style="text-align:left">कलकटर</th><th>बचत</th><th>ऋण</th><th>लक्ष्य</th><th>NCBL</th><th>eSewa</th><th>Cash</th><th>A/C</th><th>प्राप्त</th><th>फरक</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr class="total-row"><td colspan="1">जम्मा</td><td>${format(dS)}</td><td>${format(dL)}</td><td>${format(dT)}</td><td colspan="4"></td><td>${format(dR)}</td><td>${format(dT-dR)}</td></tr></tfoot>
+        </table>`;
+    }
 
-function exportCSV(arr, date) {
-  if (!arr || !arr.length) { alert('No data'); return; }
-  const header = ['#','Name','Saving','Loan','Total','NCBL','ESEWA','CASH','KHATA','TotalReceived','Difference','Status','Date'];
-  const rows = arr.map((r,i)=>[i+1,r.name,r.saving,r.loan,r.total,r.ncbl,r.esewa,r.cash,r.khata,r.totalReceived,r.difference,r.status,date||'']);
-  const csv = [header.join(','), ...rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(','))].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'collector_'+(date||'all')+'.csv'; a.click();
-  URL.revokeObjectURL(url);
-}
+    function renderReport(isManual = false) {
+        const history = JSON.parse(localStorage.getItem('mainDataArray')) || [];
+        
+        // Sound Notification Logic: Naya data thapiyeko chha vane sound bajne
+        if (history.length > lastDataCount && lastDataCount !== 0) {
+            playNotification();
+        }
+        lastDataCount = history.length;
 
-function exportXLS(arr, date) {
-  if (!arr || !arr.length) { alert('No data'); return; }
-  let html = '<table border=1><tr><th>#</th><th>Name</th><th>Saving</th><th>Loan</th><th>Total</th><th>NCBL</th><th>ESEWA</th><th>CASH</th><th>KHATA</th><th>TotalReceived</th><th>Difference</th><th>Status</th><th>Date</th></tr>';
-  arr.forEach((r,i)=>{
-    html += `<tr><td>${i+1}</td><td>${r.name}</td><td>${r.saving}</td><td>${r.loan}</td><td>${r.total}</td><td>${r.ncbl}</td><td>${r.esewa}</td><td>${r.cash}</td><td>${r.khata}</td><td>${r.totalReceived}</td><td>${r.difference}</td><td>${r.status}</td><td>${date||''}</td></tr>`;
-  });
-  html += '</table>';
-  const blob = new Blob([html], {type:'application/vnd.ms-excel'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'collector_'+(date||'all')+'.xls'; a.click();
-  URL.revokeObjectURL(url);
-}
+        const targetDate = document.getElementById('filterDate').value;
+        const searchName = document.getElementById('searchName').value.toLowerCase();
+        const listDiv = document.getElementById('statementList');
+        const pgDiv = document.getElementById('pagination');
+        
+        listDiv.innerHTML = "";
+        pgDiv.innerHTML = "";
 
-document.getElementById('exportCSV').addEventListener('click',()=>{
-  const d=document.getElementById('dateSel').value;
-  if(!d){alert('Please select date or click Show All then export from table view');return;}
-  exportCSV(renderForDate(d),d);
-});
-document.getElementById('exportXLS').addEventListener('click',()=>{
-  const d=document.getElementById('dateSel').value;
-  if(!d){alert('Please select date or click Show All then export from table view');return;}
-  exportXLS(renderForDate(d),d);
-});
-document.getElementById('printBtn').addEventListener('click',()=>window.print());
+        let filtered = history.filter(item => {
+            return (targetDate ? item.date === targetDate : true) && 
+                   (searchName ? item.name.toLowerCase().includes(searchName) : true);
+        });
 
-document.getElementById('exportPDF').addEventListener('click',()=>{
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p','pt','a4');
-  doc.setFontSize(14);
-  const d=document.getElementById('dateSel').value;
-  doc.text('Collector Report '+(d||''),40,40);
-  const arr = renderForDate(d);
-  let y=70;
-  doc.setFontSize(10);
-  arr.forEach((r,i)=>{
-    doc.text(`${i+1}. ${r.name} — Total: ${r.total} Received: ${r.totalReceived} Diff: ${r.difference} Status: ${r.status}`,40,y);
-    y+=16; if(y>740){doc.addPage(); y=40;}
-  });
-  doc.save('collector_report_'+(d||'')+'.pdf');
-});
+        let groups = {};
+        filtered.forEach(item => {
+            if (!groups[item.date]) groups[item.date] = [];
+            groups[item.date].push(item);
+        });
+
+        let sortedDates = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+        const totalPages = Math.ceil(sortedDates.length / recordsPerPage);
+        const pagedDates = sortedDates.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
+
+        if(sortedDates.length === 0) {
+            listDiv.innerHTML = "<p style='text-align:center; grid-column: 1 / span 3; color:#94a3b8; padding: 40px;'>कुनै डाटा फेला परेन।</p>";
+        }
+
+        pagedDates.forEach(date => {
+            const data = groups[date];
+            let totalRecv = data.reduce((sum, item) => sum + (item.values.slice(2,6).reduce((a,b)=>parseFloat(a)+parseFloat(b),0)), 0);
+            const card = document.createElement('div');
+            card.className = "date-card";
+            card.onclick = () => openFullData(date, data);
+            card.innerHTML = `<h3>📅 ${date}</h3><div class="summary-box"><span>👥 कलकटर: <b>${data.length}</b></span><span style="color:#059669;">💰 <b>Rs. ${format(totalRecv)}</b></span></div>`;
+            listDiv.appendChild(card);
+        });
+
+        if (totalPages > 1) {
+            const prev = document.createElement('button');
+            prev.className = "pg-btn"; prev.innerText = "« Previous";
+            prev.disabled = currentPage === 1;
+            prev.onclick = () => { currentPage--; renderReport(); window.scrollTo(0,0); };
+            pgDiv.appendChild(prev);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `pg-btn ${i === currentPage ? 'active' : ''}`;
+                btn.innerText = i;
+                btn.onclick = () => { currentPage = i; renderReport(); window.scrollTo(0,0); };
+                pgDiv.appendChild(btn);
+            }
+
+            const next = document.createElement('button');
+            next.className = "pg-btn"; next.innerText = "Next »";
+            next.disabled = currentPage === totalPages;
+            next.onclick = () => { currentPage++; renderReport(); window.scrollTo(0,0); };
+            pgDiv.appendChild(next);
+        }
+        updateTimestamp();
+    }
+
+    // Auto Refresh pratyek 30 seconds ma
+    setInterval(renderReport, 30000);
+
+    window.onload = () => {
+        // First load ma data count set garne
+        const history = JSON.parse(localStorage.getItem('mainDataArray')) || [];
+        lastDataCount = history.length;
+        renderReport();
+    };
+    
+    window.onclick = function(e) { if (e.target.className === 'modal') closeModal(); }
 </script>
 </body>
 </html>
