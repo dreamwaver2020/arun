@@ -3,21 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>𝐄-𝐬𝐞𝐰𝐚 𝐔𝐩𝐝𝐚𝐭𝐞𝐬</title>
+    <title>𝐄-𝐬𝐞𝐰𝐚 𝐔𝐩𝐝𝐚𝐭𝐞𝐬 (Compact)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
         
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .container { max-width: 1600px; }
         
-        .text-micro { font-size: 11px; line-height: 1rem; }
-        .text-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
-        .font-mono-ledger { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        /* Compact Font Sizes */
+        .text-micro { font-size: 12px; line-height: 1rem; }
+        .text-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; }
+        .font-mono-ledger { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
 
-        .table-auto th { font-size: 10px; text-transform: uppercase; color: #64748b; background-color: #f1f5f9; padding: 0.5rem 1.25rem; }
-        .table-auto td { padding: 0.4rem 1.25rem; border-bottom-width: 1px; border-color: #f1f5f9; }
+        /* Excel-like Table Borders - COMPACT HEIGHT */
+        .table-excel { border-collapse: collapse; width: 100%; background: white; }
+        .table-excel th { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            color: #475569; 
+            background-color: #e2e8f0; 
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+        }
+        .table-excel td { 
+            padding: 4px 12px; /* Decreased padding for compact height */
+            border: 1px solid #e2e8f0; 
+            vertical-align: middle;
+        }
         
         .status-badge { font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; text-transform: uppercase; }
         .status-approved { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
@@ -26,72 +41,72 @@
         .type-receipt { color: #2563eb; font-weight: 700; }
         .type-payment { color: #ea580c; font-weight: 700; }
         
-        .btn-primary { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .btn-update { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); }
         
         .status-radio-group input[type="radio"] { display: none; }
-        .status-radio-label { cursor: pointer; padding: 0.4rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; font-size: 11px; text-align: center; flex: 1; background: white; font-weight: 600; }
+        .status-radio-label { cursor: pointer; padding: 0.4rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; font-size: 12px; text-align: center; flex: 1; background: white; font-weight: 600; }
         .radio-pending:checked + label { background-color: #ef4444; border-color: #ef4444; color: white; }
         .radio-approved:checked + label { background-color: #22c55e; border-color: #22c55e; color: white; }
 
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="p-4 md:p-6">
+<body class="p-4">
 
     <div id="app" class="container mx-auto">
-        <header class="mb-4 border-b border-slate-200 pb-2 flex justify-between items-end">
+        <header class="mb-3 border-b-2 border-slate-300 pb-1 flex justify-between items-end">
             <h1 class="text-xl font-extrabold text-slate-800 tracking-tighter">✒️ ​𝐄​-​🇸​​🇪​​🇼​​🇦​ ​🇺​​🇵​​🇦​​🇹​​🇪​​🇸</h1>
-            <span id="edit-indicator" class="text-[9px] font-bold px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full animate-pulse hidden uppercase">Edit Active</span>
+            <span id="edit-indicator" class="text-[10px] font-bold px-3 py-1 bg-orange-100 text-orange-600 rounded-full animate-pulse hidden uppercase">Edit Active</span>
         </header>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-            <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
+            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-emerald-500">
                 <p class="text-label mb-0.5">Bank Balance</p>
-                <p id="sum-bank" class="text-base font-extrabold text-slate-800 leading-tight">$0.00</p>
+                <p id="sum-bank" class="text-lg font-extrabold text-slate-800">$0.00</p>
             </div>
-            <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-100 border-l-4 border-l-indigo-500">
+            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-indigo-500">
                 <p class="text-label mb-0.5">Net Balance</p>
-                <p id="sum-net" class="text-base font-extrabold text-slate-800 leading-tight">$0.00</p>
+                <p id="sum-net" class="text-lg font-extrabold text-slate-800">$0.00</p>
             </div>
-            <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-100 border-l-4 border-l-rose-500">
+            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-rose-500">
                 <p class="text-label mb-0.5">Outstanding Pending</p>
-                <p id="sum-pending" class="text-base font-extrabold text-rose-600 leading-tight">$0.00</p>
+                <p id="sum-pending" class="text-lg font-extrabold text-rose-600">$0.00</p>
             </div>
-            <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-100 border-l-4 border-l-green-500">
+            <div class="bg-white p-3 rounded shadow-sm border-l-4 border-green-500">
                 <p class="text-label mb-0.5">Total Approved</p>
-                <p id="sum-approved" class="text-base font-extrabold text-green-600 leading-tight">$0.00</p>
+                <p id="sum-approved" class="text-lg font-extrabold text-green-600">$0.00</p>
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-4 no-print">
+        <div class="bg-white p-4 rounded shadow-sm border border-slate-200 mb-4 no-print">
             <form id="record-form" class="grid grid-cols-1 md:grid-cols-7 gap-2 items-end">
                 <input type="hidden" id="edit-id">
                 <div>
-                    <label class="block text-label mb-1 ml-0.5">Ref Code</label>
-                    <input type="text" id="record-ref" placeholder="REF-001" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro uppercase outline-none">
+                    <label class="block text-label mb-1">Ref Code</label>
+                    <input type="text" id="record-ref" required class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded text-sm uppercase outline-none">
                 </div>
                 <div>
-                    <label class="block text-label mb-1 ml-0.5">Date</label>
-                    <input type="text" id="record-date" placeholder="DD/MM/YYYY" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro outline-none">
+                    <label class="block text-label mb-1">Date</label>
+                    <input type="text" id="record-date" required class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-label mb-1 ml-0.5">Name</label>
-                    <input type="text" id="record-name" placeholder="Name" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro outline-none">
+                    <label class="block text-label mb-1">Name</label>
+                    <input type="text" id="record-name" required class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-label mb-1 ml-0.5">Type</label>
-                    <select id="record-type" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro cursor-pointer">
+                    <label class="block text-label mb-1">Type</label>
+                    <select id="record-type" class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded text-sm cursor-pointer">
                         <option value="Receipt">Receipt (+)</option>
                         <option value="Payment">Payment (-)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-label mb-1 ml-0.5">Amount</label>
-                    <input type="number" id="record-amount" placeholder="0.00" step="0.01" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro outline-none">
+                    <label class="block text-label mb-1">Amount</label>
+                    <input type="number" id="record-amount" step="0.01" required class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded text-sm font-bold">
                 </div>
                 <div>
-                    <label class="block text-label mb-1 ml-0.5">Status</label>
+                    <label class="block text-label mb-1">Status</label>
                     <div class="flex space-x-1 status-radio-group">
                         <input type="radio" id="st-pending" name="st-choice" value="Pending" class="radio-pending" checked>
                         <label for="st-pending" class="status-radio-label">Pending</label>
@@ -100,98 +115,93 @@
                     </div>
                 </div>
                 <div class="flex gap-1">
-                    <button type="submit" id="submit-btn" class="flex-1 btn-primary text-white h-[31px] rounded text-[11px] font-bold shadow-sm">Save</button>
-                    <button type="button" id="cancel-edit" class="hidden px-2 bg-slate-200 text-slate-600 h-[31px] rounded text-[11px] font-bold" onclick="resetForm()">X</button>
+                    <button type="submit" id="submit-btn" class="flex-1 btn-primary text-white h-[34px] rounded text-xs font-bold shadow">SAVE</button>
+                    <button type="button" id="cancel-edit" class="hidden px-2 bg-slate-300 text-slate-700 h-[34px] rounded text-xs font-bold" onclick="resetForm()">X</button>
                 </div>
             </form>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-3 flex flex-col md:flex-row justify-between items-center gap-3 no-print bg-slate-50/50">
-                <div class="flex gap-1.5">
-                    <button onclick="window.print()" class="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded text-[10px] font-bold flex items-center gap-1">
-                        <i data-lucide="printer" class="w-3 h-3"></i> PRINT
+        <div class="bg-white rounded shadow border border-slate-300 overflow-hidden">
+            <div class="p-2 flex flex-col md:flex-row justify-between items-center gap-2 no-print bg-slate-100 border-b border-slate-300">
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="px-3 py-1 bg-white border border-slate-300 text-slate-700 rounded text-[10px] font-bold flex items-center gap-1">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> PRINT
                     </button>
-                    <button onclick="exportToCSV()" class="px-2.5 py-1.5 bg-white border border-slate-200 text-emerald-600 rounded text-[10px] font-bold flex items-center gap-1">
-                        <i data-lucide="file-spreadsheet" class="w-3 h-3"></i> CSV
+                    <button onclick="exportToCSV()" class="px-3 py-1 bg-white border border-slate-300 text-emerald-600 rounded text-[10px] font-bold flex items-center gap-1">
+                        <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> EXCEL
                     </button>
                 </div>
                 <div class="relative w-full md:w-80">
-                    <i data-lucide="search" class="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-box" placeholder="Filter by Ref or Status..." class="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded text-[10px] outline-none" oninput="applyFilters()">
+                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-box" placeholder="Search..." class="w-full pl-8 pr-3 py-1 bg-white border border-slate-300 rounded text-xs outline-none" oninput="applyFilters()">
                 </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="min-w-full table-auto">
+                <table class="table-excel">
                     <thead>
                         <tr>
-                            <th class="text-left">Ref Code</th>
-                            <th class="text-left">Date</th>
-                            <th class="text-left">Name</th>
-                            <th class="text-left">Type</th>
+                            <th>Ref Code</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Type</th>
                             <th class="text-right">Amount</th>
                             <th class="text-right">Balance</th>
                             <th class="text-center">Status</th>
-                            <th class="text-center no-print">Actions</th>
+                            <th class="text-center no-print">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body" class="divide-y divide-slate-50"></tbody>
+                    <tbody id="table-body" class="text-slate-700"></tbody>
                 </table>
             </div>
 
-            <div class="p-3 flex justify-between items-center no-print bg-slate-50/50 border-t border-slate-100">
-                <div id="pagination-info" class="text-label tracking-tighter"></div>
-                <div class="flex space-x-1">
-                    <button onclick="prevPage()" id="btn-prev" class="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-bold disabled:opacity-30">Prev</button>
-                    <button onclick="nextPage()" id="btn-next" class="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-bold disabled:opacity-30">Next</button>
+            <div class="p-2 flex justify-between items-center no-print bg-slate-50 border-t border-slate-300">
+                <div id="pagination-info" class="text-label text-[9px] text-slate-500"></div>
+                <div class="flex space-x-2">
+                    <button onclick="prevPage()" id="btn-prev" class="px-3 py-1 bg-white border border-slate-300 rounded text-[10px] font-bold disabled:opacity-30">PREV</button>
+                    <button onclick="nextPage()" id="btn-next" class="px-3 py-1 bg-white border border-slate-300 rounded text-[10px] font-bold disabled:opacity-30">NEXT</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let allRecords = JSON.parse(localStorage.getItem('sig_manager_v14') || '[]');
+        let allRecords = JSON.parse(localStorage.getItem('sig_manager_v17') || '[]');
         let filteredRecords = [];
         let isEditing = false;
         let currentPage = 1;
-        const recordsPerPage = 20;
+        const recordsPerPage = 30; // Increased to show more in compact view
 
         const formatCurrency = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
         function updateUI() {
-            localStorage.setItem('sig_manager_v14', JSON.stringify(allRecords));
+            localStorage.setItem('sig_manager_v17', JSON.stringify(allRecords));
             
-            const totals = allRecords.reduce((acc, r) => {
+            const stats = allRecords.reduce((acc, r) => {
                 const amt = parseFloat(r.amount);
-                
-                // Logic for Net Balance (Status jptai bhaye pani jodne/ghataune)
-                if(r.type === 'Receipt') acc.allReceipts += amt;
-                else acc.allPayments += amt;
+                if(r.type === 'Receipt') acc.totalReceipts += amt;
+                else acc.totalPayments += amt;
 
-                // Outstanding Pending Calculation
                 if(r.status === 'Pending') {
-                    acc.totalPending += amt;
+                    if(r.type === 'Receipt') acc.pendingReceipts += amt;
+                    else acc.pendingPayments += amt;
                 }
                 
-                // Logic for Approved Stats & Bank Balance
                 if(r.status === 'Approved') {
-                    if(r.type === 'Receipt') acc.appReceipts += amt;
-                    else acc.appPayments += amt;
+                    if(r.type === 'Receipt') acc.approvedReceipts += amt;
+                    else acc.approvedPayments += amt;
                 }
-
                 return acc;
-            }, {totalPending:0, allReceipts:0, allPayments:0, appReceipts:0, appPayments:0});
+            }, {
+                totalReceipts: 0, totalPayments: 0, 
+                pendingReceipts: 0, pendingPayments: 0,
+                approvedReceipts: 0, approvedPayments: 0
+            });
 
-            // Calculations
-            const netBalance = totals.allReceipts - totals.allPayments;
-            const bankBalance = totals.appReceipts - totals.appPayments;
-            const totalApprovedDisplay = totals.appReceipts - totals.appPayments;
-
-            document.getElementById('sum-pending').textContent = formatCurrency(totals.totalPending);
-            document.getElementById('sum-approved').textContent = formatCurrency(totalApprovedDisplay);
-            document.getElementById('sum-net').textContent = formatCurrency(netBalance);
-            document.getElementById('sum-bank').textContent = formatCurrency(bankBalance);
+            document.getElementById('sum-bank').textContent = formatCurrency(stats.approvedReceipts - stats.approvedPayments);
+            document.getElementById('sum-net').textContent = formatCurrency(stats.totalReceipts - stats.totalPayments);
+            document.getElementById('sum-pending').textContent = formatCurrency(stats.pendingReceipts - stats.pendingPayments);
+            document.getElementById('sum-approved').textContent = formatCurrency(stats.approvedReceipts - stats.approvedPayments);
             
             applyFilters();
         }
@@ -210,7 +220,7 @@
             tbody.innerHTML = '';
 
             let runningBalance = 0;
-            const recordsWithBalance = [...filteredRecords].reverse().map(r => {
+            const recordsWithBalance = [...filteredRecords].sort((a,b) => a.id - b.id).map(r => {
                 if(r.type === 'Receipt') runningBalance += parseFloat(r.amount);
                 else runningBalance -= parseFloat(r.amount);
                 return { ...r, balance: runningBalance };
@@ -221,20 +231,20 @@
 
             pageData.forEach(r => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.className = "hover:bg-blue-50/50";
                 tr.innerHTML = `
-                    <td class="text-micro font-bold text-blue-600 uppercase">${r.refCode}</td>
+                    <td class="text-micro font-bold text-blue-700 uppercase">${r.refCode}</td>
                     <td class="text-micro text-slate-500">${r.date}</td>
-                    <td class="text-micro font-medium text-slate-700">${r.name}</td>
+                    <td class="text-micro font-semibold text-slate-800">${r.name}</td>
                     <td class="text-micro ${r.type === 'Receipt' ? 'type-receipt' : 'type-payment'}">${r.type}</td>
-                    <td class="text-right font-mono-ledger font-bold">${formatCurrency(r.amount)}</td>
+                    <td class="text-right font-mono-ledger font-bold text-slate-900">${formatCurrency(r.amount)}</td>
                     <td class="text-right font-mono-ledger font-bold ${r.balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatCurrency(r.balance)}</td>
                     <td class="text-center"><span class="status-badge ${r.status === 'Approved' ? 'status-approved' : 'status-pending'}">${r.status}</span></td>
                     <td class="text-center no-print">
                         <div class="flex justify-center gap-1">
-                            <button onclick="editRecord('${r.id}')" class="p-1 text-blue-500 hover:bg-blue-50 rounded"><i data-lucide="pencil" class="w-3 h-3"></i></button>
-                            <button onclick="toggleStatus('${r.id}')" class="p-1 text-emerald-500 hover:bg-slate-50 rounded"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
-                            <button onclick="deleteRecord('${r.id}')" class="p-1 text-rose-500 hover:bg-rose-50 rounded"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                            <button onclick="editRecord('${r.id}')" class="p-1 text-blue-600 hover:bg-blue-100 rounded border border-blue-200"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+                            <button onclick="toggleStatus('${r.id}')" class="p-1 text-emerald-600 hover:bg-emerald-100 rounded border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3"></i></button>
+                            <button onclick="deleteRecord('${r.id}')" class="p-1 text-rose-600 hover:bg-rose-100 rounded border border-rose-200"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                         </div>
                     </td>
                 `;
@@ -242,7 +252,7 @@
             });
 
             const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
-            document.getElementById('pagination-info').textContent = `PAGE ${currentPage} / ${totalPages || 1} • ${filteredRecords.length} RECORDS`;
+            document.getElementById('pagination-info').textContent = `PAGE ${currentPage} / ${totalPages || 1} (${filteredRecords.length} TOTAL)`;
             document.getElementById('btn-prev').disabled = currentPage === 1;
             document.getElementById('btn-next').disabled = currentPage >= totalPages;
             lucide.createIcons();
@@ -262,16 +272,17 @@
             document.getElementById('record-type').value = r.type;
             document.getElementById('record-amount').value = r.amount;
             document.querySelector(`input[name="st-choice"][value="${r.status}"]`).checked = true;
-            document.getElementById('submit-btn').textContent = "Update";
+            document.getElementById('submit-btn').textContent = "UPDATE";
             document.getElementById('submit-btn').classList.add('btn-update');
             document.getElementById('cancel-edit').classList.remove('hidden');
             document.getElementById('edit-indicator').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.resetForm = () => {
             isEditing = false;
             document.getElementById('record-form').reset();
-            document.getElementById('submit-btn').textContent = "Save";
+            document.getElementById('submit-btn').textContent = "SAVE";
             document.getElementById('submit-btn').classList.remove('btn-update');
             document.getElementById('cancel-edit').classList.add('hidden');
             document.getElementById('edit-indicator').classList.add('hidden');
@@ -292,7 +303,7 @@
                 const idx = allRecords.findIndex(x => x.id === data.id);
                 allRecords[idx] = data;
             } else {
-                allRecords.unshift(data);
+                allRecords.unshift(data); // New records on top
             }
             resetForm();
             updateUI();
@@ -305,18 +316,18 @@
         };
 
         window.deleteRecord = (id) => {
-            if(confirm('Delete record?')) {
+            if(confirm('Confirm Delete?')) {
                 allRecords = allRecords.filter(r => r.id !== id);
                 updateUI();
             }
         };
 
         window.exportToCSV = () => {
-            const rows = [["Ref","Date","Name","Type","Amount","Status"], ...allRecords.map(r => [r.refCode, r.date, r.name, r.type, r.amount, r.status])];
+            const rows = [["Ref Code","Date","Name","Type","Amount","Status"], ...allRecords.map(r => [r.refCode, r.date, r.name, r.type, r.amount, r.status])];
             const csv = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
             const link = document.createElement("a");
             link.href = encodeURI(csv);
-            link.download = "ledger_export.csv";
+            link.download = `Report_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         };
 
