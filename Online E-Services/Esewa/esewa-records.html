@@ -12,7 +12,6 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .container { max-width: 1600px; }
         
-        /* Micro Font Sizes */
         .text-micro { font-size: 11px; line-height: 1rem; }
         .text-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
         .font-mono-ledger { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
@@ -42,7 +41,7 @@
 
     <div id="app" class="container mx-auto">
         <header class="mb-4 border-b border-slate-200 pb-2 flex justify-between items-end">
-            <h1 class="text-xl font-extrabold text-slate-800 tracking-tighter">✒️ ​𝐄​-​🇸​​🇪​​🇼​​🇦​ ​🇺​​🇵​​🇩​​🇦​​🇹​​🇪​​🇸</h1>
+            <h1 class="text-xl font-extrabold text-slate-800 tracking-tighter">✒️ ​𝐄​-​🇸​​🇪​​🇼​​🇦​ ​🇺​​🇵​​🇦​​🇹​​🇪​​🇸</h1>
             <span id="edit-indicator" class="text-[9px] font-bold px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full animate-pulse hidden uppercase">Edit Active</span>
         </header>
         
@@ -70,15 +69,15 @@
                 <input type="hidden" id="edit-id">
                 <div>
                     <label class="block text-label mb-1 ml-0.5">Ref Code</label>
-                    <input type="text" id="record-ref" placeholder="REF-001" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro uppercase focus:ring-1 focus:ring-blue-500 outline-none">
+                    <input type="text" id="record-ref" placeholder="REF-001" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro uppercase outline-none">
                 </div>
                 <div>
                     <label class="block text-label mb-1 ml-0.5">Date</label>
-                    <input type="text" id="record-date" placeholder="DD/MM/YYYY" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro focus:ring-1 focus:ring-blue-500 outline-none">
+                    <input type="text" id="record-date" placeholder="DD/MM/YYYY" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro outline-none">
                 </div>
                 <div>
                     <label class="block text-label mb-1 ml-0.5">Name</label>
-                    <input type="text" id="record-name" placeholder="Name" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro focus:ring-1 focus:ring-blue-500 outline-none">
+                    <input type="text" id="record-name" placeholder="Name" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro outline-none">
                 </div>
                 <div>
                     <label class="block text-label mb-1 ml-0.5">Type</label>
@@ -89,7 +88,7 @@
                 </div>
                 <div>
                     <label class="block text-label mb-1 ml-0.5">Amount</label>
-                    <input type="number" id="record-amount" placeholder="0.00" step="0.01" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro focus:ring-1 focus:ring-blue-500 outline-none">
+                    <input type="number" id="record-amount" placeholder="0.00" step="0.01" required class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded text-micro outline-none">
                 </div>
                 <div>
                     <label class="block text-label mb-1 ml-0.5">Status</label>
@@ -110,16 +109,16 @@
         <div class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
             <div class="p-3 flex flex-col md:flex-row justify-between items-center gap-3 no-print bg-slate-50/50">
                 <div class="flex gap-1.5">
-                    <button onclick="window.print()" class="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-slate-50">
+                    <button onclick="window.print()" class="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded text-[10px] font-bold flex items-center gap-1">
                         <i data-lucide="printer" class="w-3 h-3"></i> PRINT
                     </button>
-                    <button onclick="exportToCSV()" class="px-2.5 py-1.5 bg-white border border-slate-200 text-emerald-600 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-emerald-50">
+                    <button onclick="exportToCSV()" class="px-2.5 py-1.5 bg-white border border-slate-200 text-emerald-600 rounded text-[10px] font-bold flex items-center gap-1">
                         <i data-lucide="file-spreadsheet" class="w-3 h-3"></i> CSV
                     </button>
                 </div>
                 <div class="relative w-full md:w-80">
                     <i data-lucide="search" class="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-box" placeholder="Filter by Ref or Status..." class="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded text-[10px] outline-none shadow-sm" oninput="applyFilters()">
+                    <input type="text" id="search-box" placeholder="Filter by Ref or Status..." class="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded text-[10px] outline-none" oninput="applyFilters()">
                 </div>
             </div>
 
@@ -165,18 +164,32 @@
             
             const totals = allRecords.reduce((acc, r) => {
                 const amt = parseFloat(r.amount);
-                if(r.status === 'Pending') acc.pending += amt;
-                if(r.status === 'Approved') acc.approved += amt;
-                if(r.type === 'Receipt') acc.receipt += amt;
-                if(r.type === 'Payment') acc.payment += amt;
+                
+                // Logic for Net Balance (Status jptai bhaye pani jodne/ghataune)
+                if(r.type === 'Receipt') acc.allReceipts += amt;
+                else acc.allPayments += amt;
+
+                // Outstanding Pending Calculation
+                if(r.status === 'Pending') {
+                    acc.totalPending += amt;
+                }
+                
+                // Logic for Approved Stats & Bank Balance
+                if(r.status === 'Approved') {
+                    if(r.type === 'Receipt') acc.appReceipts += amt;
+                    else acc.appPayments += amt;
+                }
+
                 return acc;
-            }, {pending:0, approved:0, receipt:0, payment:0});
+            }, {totalPending:0, allReceipts:0, allPayments:0, appReceipts:0, appPayments:0});
 
-            const netBalance = totals.receipt - totals.payment;
-            const bankBalance = netBalance - totals.pending;
+            // Calculations
+            const netBalance = totals.allReceipts - totals.allPayments;
+            const bankBalance = totals.appReceipts - totals.appPayments;
+            const totalApprovedDisplay = totals.appReceipts - totals.appPayments;
 
-            document.getElementById('sum-pending').textContent = formatCurrency(totals.pending);
-            document.getElementById('sum-approved').textContent = formatCurrency(totals.approved);
+            document.getElementById('sum-pending').textContent = formatCurrency(totals.totalPending);
+            document.getElementById('sum-approved').textContent = formatCurrency(totalApprovedDisplay);
             document.getElementById('sum-net').textContent = formatCurrency(netBalance);
             document.getElementById('sum-bank').textContent = formatCurrency(bankBalance);
             
@@ -185,14 +198,9 @@
 
         function applyFilters() {
             const term = document.getElementById('search-box').value.toLowerCase().trim();
-            if (!term) {
-                filteredRecords = [...allRecords];
-            } else {
-                const terms = term.split(/\s+/);
-                filteredRecords = allRecords.filter(r => 
-                    terms.every(t => r.refCode.toLowerCase().includes(t) || r.status.toLowerCase().includes(t))
-                );
-            }
+            filteredRecords = !term ? [...allRecords] : allRecords.filter(r => 
+                r.refCode.toLowerCase().includes(term) || r.status.toLowerCase().includes(term) || r.name.toLowerCase().includes(term)
+            );
             currentPage = 1;
             renderTable();
         }
@@ -209,8 +217,7 @@
             }).reverse();
 
             const start = (currentPage - 1) * recordsPerPage;
-            const end = start + recordsPerPage;
-            const pageData = recordsWithBalance.slice(start, end);
+            const pageData = recordsWithBalance.slice(start, start + recordsPerPage);
 
             pageData.forEach(r => {
                 const tr = document.createElement('tr');
@@ -226,7 +233,7 @@
                     <td class="text-center no-print">
                         <div class="flex justify-center gap-1">
                             <button onclick="editRecord('${r.id}')" class="p-1 text-blue-500 hover:bg-blue-50 rounded"><i data-lucide="pencil" class="w-3 h-3"></i></button>
-                            <button onclick="toggleStatus('${r.id}')" class="p-1 ${r.status === 'Approved' ? 'text-orange-500' : 'text-emerald-500'} hover:bg-slate-50 rounded"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                            <button onclick="toggleStatus('${r.id}')" class="p-1 text-emerald-500 hover:bg-slate-50 rounded"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
                             <button onclick="deleteRecord('${r.id}')" class="p-1 text-rose-500 hover:bg-rose-50 rounded"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                         </div>
                     </td>
@@ -259,7 +266,6 @@
             document.getElementById('submit-btn').classList.add('btn-update');
             document.getElementById('cancel-edit').classList.remove('hidden');
             document.getElementById('edit-indicator').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.resetForm = () => {
@@ -310,7 +316,7 @@
             const csv = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
             const link = document.createElement("a");
             link.href = encodeURI(csv);
-            link.download = "compact_ledger.csv";
+            link.download = "ledger_export.csv";
             link.click();
         };
 
