@@ -295,26 +295,22 @@
 </div>
 
 <script>
-// --- Core Functions: Login/Logout Logic ---
-function login(){
-  const u=document.getElementById('username').value.trim();
-  const p=document.getElementById('password').value.trim();
-  
-  // Hardcoded Credentials Check
-  if(u==='Admin'&&p==='Admin123'){
-    document.getElementById('loginPage').style.display='none';
-    document.getElementById('mainPage').style.display='flex'; // Show main page
-    // Ensure dashboard placeholder is visible on login
+ // FORBIDDEN (यो सुरक्षित र सजिलो छ)
+  const encodedUser = "QWRtaW4="; 
+  const encodedPass = "QWRtaW4xMjM="; 
+
+  if (btoa(u) === encodedUser && btoa(p) === encodedPass) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainPage').style.display = 'flex';
     document.getElementById('dashboardPlaceholder').style.display = 'flex';
     document.getElementById('contentFrame').style.display = 'none';
-    document.getElementById('contentFrame').src = 'about:blank'; // Clear previous content
-  }else{
-    const e=document.getElementById('error');
-    e.style.display='block';
-    setTimeout(()=>e.style.display='none',3000);
+    document.getElementById('contentFrame').src = 'about:blank';
+  } else {
+    const e = document.getElementById('error');
+    e.style.display = 'block';
+    setTimeout(() => e.style.display = 'none', 3000);
   }
 }
-
 function logout(){
   if(confirm('Are you sure you want to logout?')){
     document.getElementById('mainPage').style.display='none'; // Hide main page
